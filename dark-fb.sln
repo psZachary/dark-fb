@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34031.279
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dark-fb", "dark-fb.vcxproj", "{D6EF9DA7-7077-469D-865D-06EA99675EA2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Dll-Release|x64 = Dll-Release|x64
+		Dll-Release|x86 = Dll-Release|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D6EF9DA7-7077-469D-865D-06EA99675EA2}.Debug|x64.ActiveCfg = Debug|x64
+		{D6EF9DA7-7077-469D-865D-06EA99675EA2}.Debug|x64.Build.0 = Debug|x64
+		{D6EF9DA7-7077-469D-865D-06EA99675EA2}.Debug|x86.ActiveCfg = Debug|Win32
+		{D6EF9DA7-7077-469D-865D-06EA99675EA2}.Debug|x86.Build.0 = Debug|Win32
+		{D6EF9DA7-7077-469D-865D-06EA99675EA2}.Dll-Release|x64.ActiveCfg = Dll-Release|x64
+		{D6EF9DA7-7077-469D-865D-06EA99675EA2}.Dll-Release|x64.Build.0 = Dll-Release|x64
+		{D6EF9DA7-7077-469D-865D-06EA99675EA2}.Dll-Release|x86.ActiveCfg = Dll-Release|Win32
+		{D6EF9DA7-7077-469D-865D-06EA99675EA2}.Dll-Release|x86.Build.0 = Dll-Release|Win32
+		{D6EF9DA7-7077-469D-865D-06EA99675EA2}.Release|x64.ActiveCfg = Release|x64
+		{D6EF9DA7-7077-469D-865D-06EA99675EA2}.Release|x64.Build.0 = Release|x64
+		{D6EF9DA7-7077-469D-865D-06EA99675EA2}.Release|x86.ActiveCfg = Release|Win32
+		{D6EF9DA7-7077-469D-865D-06EA99675EA2}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {ECDD3D80-2324-4C33-9F92-8602D3A19B64}
+	EndGlobalSection
+EndGlobal

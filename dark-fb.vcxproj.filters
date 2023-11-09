@@ -1,0 +1,116 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Overlay">
+      <UniqueIdentifier>{0f706c7d-34d4-40d6-a28d-cb338b129d65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Overlay\imgui">
+      <UniqueIdentifier>{13168aa5-3d92-49bc-b351-05bfd5893f71}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="esp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="overlay\dx11\moverlay.cpp">
+      <Filter>Overlay</Filter>
+    </ClCompile>
+    <ClCompile Include="overlay\imgui\imgui.cpp">
+      <Filter>Overlay\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="overlay\imgui\imgui_demo.cpp">
+      <Filter>Overlay\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="overlay\imgui\imgui_draw.cpp">
+      <Filter>Overlay\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="overlay\imgui\imgui_impl_dx11.cpp">
+      <Filter>Overlay\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="overlay\imgui\imgui_impl_win32.cpp">
+      <Filter>Overlay\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="overlay\imgui\imgui_tables.cpp">
+      <Filter>Overlay\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="overlay\imgui\imgui_widgets.cpp">
+      <Filter>Overlay\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="combat.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="menu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cvar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="sdk.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="memory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mathh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="render.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cvar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="esp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="offsets.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="main.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="overlay\dx11\moverlay.h">
+      <Filter>Overlay</Filter>
+    </ClInclude>
+    <ClInclude Include="overlay\overlay.h">
+      <Filter>Overlay</Filter>
+    </ClInclude>
+    <ClInclude Include="overlay\imgui\imgui.h">
+      <Filter>Overlay\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="menu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="overlay\winhide.h">
+      <Filter>Overlay</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="combat.h">
+      <Filter>Header Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>
