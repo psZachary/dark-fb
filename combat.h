@@ -12,6 +12,7 @@ namespace combat {
 
 	inline vector3 last_aim_location;
 
+	void set_attributes();
 	void do_aimbot();
-	void big_heads(float activation_distance, float expansion);
+	void big_heads(float activation_distance, vector3 expansion);
 }

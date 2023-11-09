@@ -17,7 +17,10 @@ void exploit_threaded() {
 
         if (!cvar::validate_cvars()) continue;
 
-        combat::big_heads(config::combat::activation_distance, config::combat::big_head_expansion);
+        combat::set_attributes();
+
+        vector3 head_expansion{ config::combat::big_head_expansion_x, config::combat::big_head_expansion_y, config::combat::big_head_expansion_z };
+        combat::big_heads(config::combat::activation_distance, head_expansion);
     }
 }
 

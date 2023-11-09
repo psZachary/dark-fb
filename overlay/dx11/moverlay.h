@@ -56,15 +56,15 @@ public:
 
 
 
-	inline void draw_text(const ImVec2& pos, ImU32 col, const char* text_begin, bool outline = false, const char* end = 0) {
+	inline void draw_text(const ImVec2& pos, ImU32 col, const char* text_begin, bool outline = false, float font_size = 0.0f, const char* end = 0) {
 		if (outline) {
-			draw_list->AddText(ImVec2(pos.x + 1, pos.y + 1), IM_COL32_BLACK, text_begin, end);
-			draw_list->AddText(ImVec2(pos.x - 1, pos.y - 1), IM_COL32_BLACK, text_begin, end);
-			draw_list->AddText(ImVec2(pos.x + 1, pos.y - 1), IM_COL32_BLACK, text_begin, end);
-			draw_list->AddText(ImVec2(pos.x - 1, pos.y + 1), IM_COL32_BLACK, text_begin, end);
+			draw_list->AddText(NULL, font_size, ImVec2(pos.x + 1, pos.y + 1), IM_COL32_BLACK, text_begin, end);
+			draw_list->AddText(NULL, font_size, ImVec2(pos.x - 1, pos.y - 1), IM_COL32_BLACK, text_begin, end);
+			draw_list->AddText(NULL, font_size, ImVec2(pos.x + 1, pos.y - 1), IM_COL32_BLACK, text_begin, end);
+			draw_list->AddText(NULL, font_size, ImVec2(pos.x - 1, pos.y + 1), IM_COL32_BLACK, text_begin, end);
 		}
 		
-		draw_list->AddText(pos, col, text_begin);	
+		draw_list->AddText(NULL, font_size, pos, col, text_begin);
 	}
 	inline void draw_rect(const ImVec2& pos1, const ImVec2& pos2, ImU32 col, bool outline = false, float rounding = 0.0f, int rounding_corners_flags = 0x0F, float thickness = 1.0f) {
 		if (outline) {

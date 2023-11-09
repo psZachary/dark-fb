@@ -3,6 +3,21 @@
 std::unordered_map<a_pawn*, vector3> box_extent_cache{};
 std::unordered_map<a_pawn*, vector3> rel_scale_cache{};
 
+void combat::set_attributes()
+{
+    if (!cvar::validate_cvars()) return;
+
+    auto ability_system_component = cvar::local_pawn->ability_system_cmp();
+    if (!ability_system_component) return;
+
+    for (auto& attribute_set : ability_system_component->get_spawned_attributes().list()) {
+        if (!attribute_set) continue;
+
+        if (config::combat::move_speed_enabled)
+            attribute_set->set_move_speed(config::combat::move_speed);
+    }
+}
+
 void combat::do_aimbot() {
 	if (!cvar::validate_cvars()) return;
 	if (!cvar::target) return;
@@ -31,7 +46,7 @@ void combat::do_aimbot() {
 	cvar::local_player_controller->set_control_rotation(aim_angle);
 }
 
-void combat::big_heads(float activation_distance, float expansion)
+void combat::big_heads(float activation_distance, vector3 expansion)
 {
     for (auto& player : cvar::players) {
         if (!player) continue;
@@ -44,38 +59,43 @@ void combat::big_heads(float activation_distance, float expansion)
         auto head_hitbox = pawn->head_hitbox();
         if (!head_hitbox) continue;
 
-        if (box_extent_cache.find(pawn) == box_extent_cache.end()) {
-            box_extent_cache[pawn] = head_hitbox->get_box_extent();
-        }
+        auto [max_hp, hp] = util::get_health(pawn);
+
+        if (hp <= 0.f || max_hp <= 0.f)
+            continue;
+
         if (rel_scale_cache.find(pawn) == rel_scale_cache.end()) {
 			rel_scale_cache[pawn] = head_hitbox->get_relative_scale();
 		}
 
-        vector3 cached_box_extent = box_extent_cache[pawn];
-        vector3 old_rel_scale = rel_scale_cache[pawn];
+        vector3 cached_rel_scale = rel_scale_cache[pawn];
 
-        cached_box_extent = cached_box_extent == vector3::zero() ? vector3{ 30, 20, 20 } : cached_box_extent;
-        cached_box_extent = old_rel_scale == vector3::zero() ? vector3{ 1, 1, 1 } : old_rel_scale;
+        cached_rel_scale = cached_rel_scale == vector3::zero() ? vector3{ 1, 1, 1 } : cached_rel_scale;
 
         vector3 head_position = util::get_bone_position(pawn, sdk::player_bone::head);
         vector3 local_position = cvar::local_root_cmp->get_relative_location();
 
         bool in_activation_distance = ((head_position - local_position) / 100).magnitude() < activation_distance;
         bool is_friendly = util::is_friendly(pawn);
-        if (config::combat::big_heads && in_activation_distance && !is_friendly) {
-            head_hitbox->set_box_extent(cached_box_extent * expansion);
-            head_hitbox->set_relative_scale(old_rel_scale * expansion);
-        }
-        else {
-            if (is_friendly && config::combat::no_hit_teamates) {
-                for (auto& hitbox : pawn->get_all_hitboxes()) {
-                    hitbox->set_box_extent({ 0, 0, 0 });
-					hitbox->set_relative_scale({ 0, 0, 0 });
-                }
-				continue;
+        // Enemy big hitboxes
+        if (!is_friendly) {
+            if (config::combat::big_heads && in_activation_distance) {
+                head_hitbox->set_relative_scale(cached_rel_scale * expansion);
             }
-            head_hitbox->set_box_extent(cached_box_extent);
-            head_hitbox->set_relative_scale(old_rel_scale);
+            else if (!config::combat::big_heads || !in_activation_distance) {
+                if (head_hitbox->get_relative_scale() != cached_rel_scale)
+                    head_hitbox->set_relative_scale(cached_rel_scale);
+            }
+        }
+        // No hit teamates
+        if (is_friendly) {
+            for (auto& hitbox : pawn->get_all_hitboxes()) {
+                if (config::combat::no_hit_teamates) 
+                    hitbox->set_relative_scale(vector3{ 0, 0, 0 });
+                else if (hitbox->get_relative_scale() != cached_rel_scale) 
+					hitbox->set_relative_scale(cached_rel_scale);
+            }
+            continue;
         }
     }
 }

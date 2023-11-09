@@ -343,6 +343,13 @@ namespace sdk {
 		unsigned char uk[0x2];
 	};
 
+	class f_gameplay_attribute_data {
+	public:
+		char pad_0x8[0x8];
+		float base_value;
+		float current_value;
+	};
+
 	//uabilitysystemtestattbriuteset
 	class u_attribute_set {
 	public:
@@ -351,9 +358,19 @@ namespace sdk {
 		}
 		float get_health() {
 			return rpm<float>((uintptr_t)this + 0x648 + 0xC);
-
 		}
-
+		void set_move_speed(float value) {
+			wpm<float>((uintptr_t)this + 0x750 + offsetof(f_gameplay_attribute_data, current_value), value);
+		}
+		float get_move_speed() {
+			return rpm<float>((uintptr_t)this + 0x750 + offsetof(f_gameplay_attribute_data, current_value));
+		}
+		void set_action_speed(float value) {
+			wpm<float>((uintptr_t)this + 0x7C0 + offsetof(f_gameplay_attribute_data, current_value), value);
+		}
+		float get_action_speed() {
+			return rpm<float>((uintptr_t)this + 0x7C0 + offsetof(f_gameplay_attribute_data, current_value));
+		}
 	};
 
 	class ability_system_component {
@@ -509,7 +526,7 @@ namespace sdk {
 			return rpm<f_account_data_replication>((uintptr_t)this + 0x738);
 		}
 		u_equipment_inv_comp* equipment_inv_comp() {
-			return rpm<u_equipment_inv_comp*>((uintptr_t)this + 0xAC0);
+			return rpm<u_equipment_inv_comp*>((uintptr_t)this + 0xAD0);
 		}
 	};
 
@@ -523,33 +540,41 @@ namespace sdk {
 			return rpm<u_scene_component*>((uintptr_t)this + 0x158);
 		}
 	};
+	
+	class u_art_data_item : public u_object {
+	public:
+		// fname 0x30
+		fname asset_type() {
+			return rpm<fname>((uintptr_t)this + 0x30);
+		}
+		u_object* item_anim_instance_class() {
+			return rpm<u_object*>((uintptr_t)this + 0x78);
+		}
+		u_object* item_static_mesh() {
+			return rpm<u_object*>((uintptr_t)this + 0x48);
+		}
+
+	};
+
+	class abp_static_mesh_item_holder_c : public actor {
+	public:
+		u_item* item_object() {
+			return rpm<u_item*>((uintptr_t)this + 0x378);
+		}
+		// 0x380
+		u_art_data_item* art_data_item() {
+			return rpm<u_art_data_item*>((uintptr_t)this + 0x380);
+		}
+	};
 
 	class abp_player_character : public a_pawn {
 	public:
-		/*
-			CMember(UBP_DCHitBox_C*)                           BP_DCHitBox_Hand_R                                          OFFSET(get<T>, {0xA30, 8, 0, 0})
-			CMember(UBP_DCHitBox_C*)                           BP_DCHitBox_Arm_R1                                          OFFSET(get<T>, {0xA38, 8, 0, 0})
-			CMember(UBP_DCHitBox_C*)                           BP_DCHitBox_Arm_R                                           OFFSET(get<T>, {0xA40, 8, 0, 0})
-			CMember(UBP_DCHitBox_C*)                           BP_DCHitBox_Hand_L                                          OFFSET(get<T>, {0xA48, 8, 0, 0})
-			CMember(UBP_DCHitBox_C*)                           BP_DCHitBox_Arm_L1                                          OFFSET(get<T>, {0xA50, 8, 0, 0})
-			CMember(UBP_DCHitBox_C*)                           BP_DCHitBox_Arm_L                                           OFFSET(get<T>, {0xA58, 8, 0, 0})
-			CMember(UBP_DCHitBox_C*)                           BP_DCHitBox_Foot_R                                          OFFSET(get<T>, {0xA60, 8, 0, 0})
-			CMember(UBP_DCHitBox_C*)                           BP_DCHitBox_Leg_R1                                          OFFSET(get<T>, {0xA68, 8, 0, 0})
-			CMember(UBP_DCHitBox_C*)                           BP_DCHitBox_Leg_R                                           OFFSET(get<T>, {0xA70, 8, 0, 0})
-			CMember(UBP_DCHitBox_C*)                           BP_DCHitBox_Foot_L                                          OFFSET(get<T>, {0xA78, 8, 0, 0})
-			CMember(UBP_DCHitBox_C*)                           BP_DCHitBox_Leg_L1                                          OFFSET(get<T>, {0xA80, 8, 0, 0})
-			CMember(UBP_DCHitBox_C*)                           BP_DCHitBox_Leg_L                                           OFFSET(get<T>, {0xA88, 8, 0, 0})
-			CMember(UBP_DCHitBox_C*)                           BP_DCHitBox_Body2                                           OFFSET(get<T>, {0xA90, 8, 0, 0})
-			CMember(UBP_DCHitBox_C*)                           BP_DCHitBox_Body1                                           OFFSET(get<T>, {0xA98, 8, 0, 0})
-			CMember(UBP_DCHitBox_C*)                           BP_DCHitBox_Body                                            OFFSET(get<T>, {0xAA0, 8, 0, 0})
-			CMember(UBP_DCHitBox_C*)                           BP_DCHitBox_Head                                            OFFSET(get<T>, {0xAA8, 8, 0, 0})
-		*/
 		ubp_dchitbox_c* head_hitbox() {
-			return rpm<ubp_dchitbox_c*>((uintptr_t)this + 0xAB8);
+			return rpm<ubp_dchitbox_c*>((uintptr_t)this + 0xAC8);
 		}
 		std::vector<ubp_dchitbox_c*> get_all_hitboxes() {
-			constexpr uintptr_t hitbox_arr_start = 0xA40;
-			constexpr uintptr_t hitbox_arr_end = 0xAB8;
+			constexpr uintptr_t hitbox_arr_start = 0xA50;
+			constexpr uintptr_t hitbox_arr_end = 0xAC8;
 			int list_size = (hitbox_arr_end - hitbox_arr_start) / 8;
 
 			ubp_dchitbox_c** hitbox_arr = new ubp_dchitbox_c*[list_size];
@@ -569,10 +594,10 @@ namespace sdk {
 			return hitboxes;
 		}
 		u_loot_component* loot_component() {
-			return rpm<u_loot_component*>((uintptr_t)this + 0xA10);
+			return rpm<u_loot_component*>((uintptr_t)this + 0xA20);
 		}
 		u_interactable_target_component* target_component() {
-			return rpm<u_interactable_target_component*>((uintptr_t)this + 0xA18);
+			return rpm<u_interactable_target_component*>((uintptr_t)this + 0xA28);
 		}
 	};
 

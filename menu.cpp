@@ -11,7 +11,7 @@ void menu::draw()
 
     if (!config::menu::is_open) return;
 
-    ImGui::SetNextWindowSize(ImVec2(780, 740), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(780, 770), ImGuiCond_FirstUseEver);
     ImGui::Begin("Labcore D&D External", 0, ImGuiWindowFlags_NoDecoration);
     ImGui::TextColored(ImVec4(16.f / 255.f, 209.f / 255.f, 243.f / 255.f, 1.f), "Labcore D&D External");
     ImGui::Separator();
@@ -33,16 +33,22 @@ void menu::draw()
             ImGui::SliderFloat("FOV", &config::combat::fov, 0.f, 1000.f, "%.0f");
         ImGui::EndChild();
         ImGui::Text("Exploits");
-        ImGui::BeginChild("Exploits", ImVec2(0, 200), true);
+        ImGui::BeginChild("Exploits", ImVec2(0, 300), true);
             // Don't put this any higher or you get banned 
             ImGui::Checkbox("Big Head Hitbox", &config::combat::big_heads);
             ImGui::TextColored(ImVec4(1.f, 1.f, 1.f, 1.f), "Expansion Size");
-            ImGui::SliderFloat(" ", &config::combat::big_head_expansion, 0.f, 6.f, "%.2f");
+            ImGui::SliderFloat("X", &config::combat::big_head_expansion_x, 0.f, 6.f, "%.2f");
+            ImGui::SliderFloat("Y", &config::combat::big_head_expansion_y, 0.f, 6.f, "%.2f");
+            ImGui::SliderFloat("Z", &config::combat::big_head_expansion_z, 0.f, 6.f, "%.2f");
             ImGui::TextColored(ImVec4(1.f, 1.f, 1.f, 1.f), "Activation Distance");
             ImGui::SliderFloat("  ", &config::combat::activation_distance, 1.f, 10.f, "%.2f");
             ImGui::Checkbox("No Hit Teamates", &config::combat::no_hit_teamates);
-            ImGui::TextColored(ImVec4(1.f, 1.f, 0.f, 1.f), "Warning: This may cause crashes");
-            ImGui::TextColored(ImVec4(1.f, 1.f, 0.f, 1.f), "Warning: In some instances, 72 hour bans have been reported use at your own risk");
+            ImGui::Checkbox("Move Speed", &config::combat::move_speed_enabled);
+            if (config::combat::move_speed_enabled)
+                ImGui::SliderFloat("  ", &config::combat::move_speed, 0.f, 350.f, "%.2f");
+
+            ImGui::TextColored(ImVec4(1.f, 1.f, 0.f, 1.f), "Warning: All features here may cause crashes");
+            ImGui::TextColored(ImVec4(1.f, 1.f, 0.f, 1.f), "Warning: In some instances, 72 hour bans have been reported use these at your own risk");
         ImGui::EndChild();
     }
     if (config::menu::tab_index == 2) {
@@ -80,7 +86,7 @@ void menu::draw()
             ImGui::Checkbox("Health", &config::esp::players::health);
             ImGui::Checkbox("Skeleton", &config::esp::players::skeleton);
             ImGui::Checkbox("Box", &config::esp::players::box);
-            ImGui::Checkbox("Head Hitboxes", &config::esp::players::box);
+            ImGui::Checkbox("Head Hitboxes", &config::esp::players::head_hitboxes);
             ImGui::Checkbox("Highlight Target", &config::esp::players::highlight_target);
             ImGui::Checkbox("Equipped Items", &config::esp::players::equipped_items);
             ImGui::Checkbox("Armor Items", &config::esp::players::armor_items);
@@ -232,6 +238,7 @@ void menu::draw()
 
             if (ImGui::CollapsingHeader("Player Colors", ImGuiTreeNodeFlags_Framed)) {
                 ImGui::ColorPicker3("Skeleton", &config::esp::players::colors::skeleton.r, ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_NoInputs);
+                ImGui::ColorPicker3("Hitboxes", &config::esp::players::colors::hitboxes.r, ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_NoInputs);
                 ImGui::ColorPicker3("Box", &config::esp::players::colors::box.r, ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_NoInputs);
                 ImGui::ColorPicker3("Name", &config::esp::players::colors::name.r, ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_NoInputs);
                 ImGui::ColorPicker3("Distance", &config::esp::players::colors::distance.r, ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_NoInputs);

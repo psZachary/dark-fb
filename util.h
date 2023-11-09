@@ -19,7 +19,15 @@ namespace util {
 		return screen_size;
 	}
 
-
+	static void get_offscreen_point(vector2& point, double degrees)
+	{
+		double x2 = screen_size().x / 2;
+		double y2 = screen_size().y / 2;
+		double d = sqrt(pow((point.x - x2), 2) + (pow((point.y - y2), 2)));
+		double r = degrees / d;
+		point.x = r * point.x + (1 - r) * x2;
+		point.y = r * point.y + (1 - r) * y2; 
+	}
 	static vector3 get_future_position(vector3 position, vector3 velocity, double distance, double strength) {
 		if (velocity.magnitude() == 0) return position;
 

@@ -108,6 +108,7 @@ namespace esp {
 		}
 
 		actor_name = util::string_replace(actor_name, "BP_", "");
+		actor_name = util::string_replace(actor_name, "SK_", "");
 		actor_name = util::string_replace(actor_name, "_Common_C", "");
 		actor_name = util::string_replace(actor_name, "_C", "");
 		actor_name = util::string_replace(actor_name, "_", " ");
@@ -156,18 +157,21 @@ namespace esp {
 	namespace loot {
 		int esp_stack = 0;
 		void draw_name(std::string name, vector2 screen_location, color_m color) {
-			cvar::overlay->draw_text(screen_location, ImColor(color), name.c_str(), true);
+			cvar::overlay->draw_text(screen_location, ImColor(color), name.c_str(), true, 13.f);
 			esp_stack++;
 		}
 		void draw_distance(double distance, vector2 screen_location, color_m color) {
-			cvar::overlay->draw_text(vector2{ screen_location.x, screen_location.y + (12.f * esp_stack) }, ImColor(color), std::format("{0:.1f}m", distance).c_str(), true);
+			cvar::overlay->draw_text(vector2{ screen_location.x, screen_location.y + (12.f * esp_stack) }, ImColor(color), std::format("{0:.1f}m", distance).c_str(), true, 13.f);
 			esp_stack++;
 		}
 		void loot_esp(f_camera_cache camera_cache) {
 			vector3 local_position = cvar::local_root_cmp->get_relative_location();
 
-			for (actor* ground_loot : cvar::ground_loot) {
+			for (abp_static_mesh_item_holder_c* ground_loot : cvar::ground_loot) {
 				if (!ground_loot) continue;
+
+				u_art_data_item* item = ground_loot->art_data_item();
+				if (!item) continue;
 
 				u_scene_component* root_cmp = ground_loot->root_component();
 				if (!root_cmp) continue;
@@ -175,18 +179,23 @@ namespace esp {
 				vector3 position = root_cmp->get_relative_location();
 				double distance = ((position - local_position) / 100).magnitude();
 
+				if (distance > config::esp::loot::render_distance) continue;
+
 				vector3 screen_location{};
-
 				if (util::w2s(position, camera_cache.pov, screen_location)) {
-					std::string loot_name = util::actor_name(ground_loot);
-
-					color_m loot_color = get_actor_color(loot_name);
+					std::string loot_actor_name = util::actor_name(ground_loot);
+					std::string loot_sk_name = util::get_name_from_fname(item->item_static_mesh()->fname_index());
+					std::string friendly_loot_name = get_friendly_name(loot_sk_name);
+					friendly_loot_name = friendly_loot_name == "None" ? "WorldLoot" : friendly_loot_name;
+					color_m loot_color = get_actor_color(loot_actor_name);
 
 					if (config::esp::loot::name)
-						draw_name(loot_name, screen_location, loot_color);
+						draw_name(friendly_loot_name, screen_location, loot_color);
 					if (config::esp::loot::distance)
 						draw_distance(distance, screen_location, color_m::white());
 				}
+
+				esp_stack = 0;
 			}
 		}
 	}
@@ -217,7 +226,6 @@ namespace esp {
 				vector3 position = root_cmp->get_relative_location();
 
 				double distance = ((position - local_position) / 100).magnitude();
-
 				if (distance > config::esp::ai::render_distance) continue;
 
 				auto [max_health, health] = util::get_health(monster);
@@ -605,6 +613,22 @@ namespace esp {
 			esp_stack++;
 		}
 
+		void draw_head_hitbox(abp_player_character* pawn, f_camera_cache camera_cache) {
+			if (config::esp::players::head_hitboxes) {
+				ubp_dchitbox_c* hitbox = pawn->head_hitbox();
+				vector3 world_location = util::get_world_position(hitbox->get_comp_to_world(), hitbox->get_transform());
+				auto box_points = util::get_draw_box_points(hitbox);
+				for (auto& [point1, point2] : box_points) {
+					vector3 p1_s_loc{};
+					vector3 p2_s_loc{};
+					bool p1_on_screen = util::w2s(point1, camera_cache.pov, p1_s_loc);
+					bool p2_on_screen = util::w2s(point2, camera_cache.pov, p2_s_loc);
+					if (p1_on_screen || p2_on_screen)
+						cvar::overlay->draw_list->AddLine(p1_s_loc, p2_s_loc, ImColor(config::esp::players::colors::hitboxes));
+				}
+			}
+		}
+
 		void player_esp(f_camera_cache camera_cache) {
 			vector3 local_position = cvar::local_root_cmp->get_relative_location();
 
@@ -627,30 +651,17 @@ namespace esp {
 				double distance = ((position - local_position) / 100).magnitude();
 
 				auto [max_health, health] = util::get_health(pawn);
-
 				if (health <= 0.f) continue;
 
 				f_transform c2w = skeletal_mesh_comp->get_comp_to_world();
-
 				vector3 screen_location{};
 				
+				if (config::esp::players::head_hitboxes)
+					draw_head_hitbox(pawn, camera_cache);
 				if (config::esp::players::skeleton)
 					draw_skeleton(pawn, camera_cache, c2w, skeletal_mesh_comp);
 				if (config::esp::players::box)
 					draw_box(camera_cache, c2w, skeletal_mesh_comp);
-
-				if (config::esp::players::head_hitboxes) {
-					ubp_dchitbox_c* hitbox = pawn->head_hitbox();
-					vector3 world_location = util::get_world_position(hitbox->get_comp_to_world(), hitbox->get_transform());
-					auto box_points = util::get_draw_box_points(hitbox);
-					for (auto& [point1, point2] : box_points) {
-						vector3 p1_s_loc{};
-						vector3 p2_s_loc{};
-						if (util::w2s(point1, camera_cache.pov, p1_s_loc) && util::w2s(point2, camera_cache.pov, p2_s_loc)) {
-							cvar::overlay->draw_list->AddLine(p1_s_loc, p2_s_loc, ImColor(config::esp::players::colors::skeleton));
-						}
-					}
-				}
 	
 				if (util::w2s(position, camera_cache.pov, screen_location)) {
 
@@ -669,10 +680,8 @@ namespace esp {
 
 						if (config::esp::players::equipped_items)
 							draw_equipped(equipment_inventory, vector2(screen_location));
-
 						if (config::esp::players::armor_items || config::esp::players::utility_items)
 							draw_wearables(equipment_inventory, vector2(screen_location));
-
 						if (config::esp::players::sheathed_items)
 							draw_sheathed(equipment_inventory, vector2(screen_location));
 					}

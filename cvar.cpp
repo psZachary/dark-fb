@@ -15,7 +15,7 @@ void cvar::cache_actors()
     std::vector<actor*> shrine_actors{};
     std::vector<actor*> trap_actors{};
     std::vector<actor*> ore_actors{};
-    std::vector<actor*> ground_loot_actors{};
+    std::vector<abp_static_mesh_item_holder_c*> ground_loot_actors{};
     std::vector<adc_monster_base*> monster_actors{};
 
     t_array<u_level*> levels = cvar::uworld->levels();
@@ -29,7 +29,7 @@ void cvar::cache_actors()
             auto actor_name = util::actor_name(actor);
 
             if (util::is_a(actor, "BP_StaticMeshItemHolder_C")) {
-				ground_loot_actors.push_back(actor);
+				ground_loot_actors.push_back((abp_static_mesh_item_holder_c*)actor);
 				continue;
 			}
 

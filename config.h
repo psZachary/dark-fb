@@ -27,8 +27,14 @@ namespace config {
 		inline bool big_heads = false;
 		inline bool no_hit_teamates = false;
 		inline bool big_head_only_target = false;
-		inline float big_head_expansion = 5.0f;
+		inline float big_head_expansion_x = 5.0f;
+		inline float big_head_expansion_y = 5.0f;
+		inline float big_head_expansion_z = 5.0f;
 		inline float activation_distance = 5.0f;
+		inline bool action_speed_enabled = false;
+		inline float action_speed = 0.5f;
+		inline bool move_speed_enabled = false;
+		inline float move_speed = 350.f;
 	}
 	namespace esp {
 		namespace ai {
@@ -89,6 +95,7 @@ namespace config {
 			}
 			namespace colors {
 				inline color_m skeleton = color_rgb{ 255, 255, 255, 255 };
+				inline color_m hitboxes = color_rgb{ 255, 0, 0, 255 };
 				inline color_m box = color_rgb{ 255, 255, 255, 255 };
 				inline color_m name = color_rgb{ 255, 255, 255, 255 };
 				inline color_m distance = color_rgb{ 255, 255, 255, 255 };

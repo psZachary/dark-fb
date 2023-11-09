@@ -171,6 +171,13 @@ public:
 		res.z = this->z + other.z;
 		return res;
 	}
+	vector3 operator* (vector3 other) {
+		auto res = vector3();
+		res.x = this->x * other.x;
+		res.y = this->y * other.y;
+		res.z = this->z * other.z;
+		return res;
+	}
 	inline double dot(vector3 other)
 	{
 		return x * other.x + y * other.y + z * other.z;

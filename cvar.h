@@ -23,7 +23,7 @@ namespace cvar {
 	inline std::vector<actor*> shrines{};
 	inline std::vector<actor*> ores{};
 	inline std::vector<actor*> traps{};
-	inline std::vector<actor*> ground_loot{};
+	inline std::vector<abp_static_mesh_item_holder_c*> ground_loot{};
 	inline std::vector<adc_monster_base*> monsters{};
 	inline std::vector<a_player_state*> players{};
 	inline std::vector<f_account_data_replication> lobby_players{};
