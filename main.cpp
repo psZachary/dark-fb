@@ -84,7 +84,6 @@ int main() {
     load_cheat();
 
     return 0;
-
 }
 #endif
 #ifdef DLL

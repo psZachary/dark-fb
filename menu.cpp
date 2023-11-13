@@ -37,9 +37,9 @@ void menu::draw()
             // Don't put this any higher or you get banned 
             ImGui::Checkbox("Big Head Hitbox", &config::combat::big_heads);
             ImGui::TextColored(ImVec4(1.f, 1.f, 1.f, 1.f), "Expansion Size");
-            ImGui::SliderFloat("X", &config::combat::big_head_expansion_x, 0.f, 6.f, "%.2f");
-            ImGui::SliderFloat("Y", &config::combat::big_head_expansion_y, 0.f, 6.f, "%.2f");
-            ImGui::SliderFloat("Z", &config::combat::big_head_expansion_z, 0.f, 6.f, "%.2f");
+            ImGui::SliderFloat("X", &config::combat::big_head_expansion_x, 0.f, 5.f, "%.2f");
+            ImGui::SliderFloat("Y", &config::combat::big_head_expansion_y, 0.f, 5.f, "%.2f");
+            ImGui::SliderFloat("Z", &config::combat::big_head_expansion_z, 0.f, 10.f, "%.2f");
             ImGui::TextColored(ImVec4(1.f, 1.f, 1.f, 1.f), "Activation Distance");
             ImGui::SliderFloat("  ", &config::combat::activation_distance, 1.f, 10.f, "%.2f");
             ImGui::Checkbox("No Hit Teamates", &config::combat::no_hit_teamates);

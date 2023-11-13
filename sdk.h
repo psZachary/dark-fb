@@ -229,6 +229,12 @@ namespace sdk {
 	};
 	class u_scene_component : public u_object {
 	public:
+		vector3 get_relative_rotation() {
+			return rpm<vector3>((uintptr_t)this + 0x140);
+		}
+		void set_relative_rotation(vector3 set) {
+			wpm<vector3>((uintptr_t)this + 0x140, set);
+		}
 		vector3 get_relative_location() {
 			return rpm<vector3>((uintptr_t)this + 0x128);
 		}
