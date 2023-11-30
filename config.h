@@ -7,6 +7,7 @@ namespace config {
 		inline bool is_open = true;
 		inline int toggle_key = VK_INSERT;
 		inline bool hide_overlay = true;
+		inline bool fullbright = true;
 	}
 	namespace colors {
 		inline color_m color_junk = color_rgb{ 100, 100, 100, 255 };

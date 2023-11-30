@@ -293,14 +293,49 @@ namespace util {
 	static bool is_friendly(sdk::a_pawn* character) {
 		if (!cvar::validate_cvars()) return false;
 		
-		auto data = character->account_replication_data();
-		auto local_data = cvar::local_pawn->account_replication_data();
-
+		auto data = character->account_replication_data(); // get_account_data_replication_party_id();
+		auto local_data = cvar::local_pawn->account_replication_data(); // get_account_data_replication_party_id();
 		auto local_party_id = local_data.party_id.read_string();
 		auto other_party_id = data.party_id.read_string();
-		if (local_party_id == 0 || other_party_id == 0) return false;
+		if ((uintptr_t)local_party_id < 0x1000)
+		{
+			//std::cout << "Invalid Local PartyID" << std::endl;
+			return false;
+		}
+		if ((uintptr_t)other_party_id < 0x1000)
+		{
+			//std::cout << "Invalid Enemy PartyID" << std::endl;
+			return false;
+		}
+		if (!local_party_id)
+		{
+			//std::cout << "Invalid Local PartyID" << std::endl;
+			return false;
+		}
+		if (!other_party_id)
+		{
+			//std::cout << "Invalid Enemy PartyID" << std::endl;
+			return false;
+		}
+		
+		/*auto nickname = data.nickname.original_nickname.read_string();
+		std::wstring nicknamews(nickname);
+		std::string nickname_str(nicknamews.begin(), nicknamews.end());*/
+		
+		std::wstring local_party_idws(local_party_id);
+		std::string local_party_id_str(local_party_idws.begin(), local_party_idws.end());
+		int local_party_id_int = std::stoi(local_party_id_str);
 
-		if (wcscmp(local_party_id, other_party_id) == 0) return true;
+		std::wstring other_party_idws(other_party_id);
+		std::string other_party_id_str(other_party_idws.begin(), other_party_idws.end());
+		int other_party_id_int = std::stoi(other_party_id_str);
+		
+		//std::cout << "Local Party ID: " << local_party_id_str << std::endl;
+		//std::cout << nickname_str << " Party ID: " << other_party_id_str << std::endl;
+		if (local_party_id_int == other_party_id_int)
+		{
+			return true;
+		}
 
 		return false;
 	}

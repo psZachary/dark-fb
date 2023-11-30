@@ -221,7 +221,10 @@ namespace sdk {
 	class fstring : public t_array<wchar_t> {
 	public:
 		wchar_t* read_string() {
-			if (count <= 0 || count > 500) return 0;
+			if (count <= 0 || count > 500)
+			{
+				return 0;
+			}
 			auto buffer = new wchar_t[count];
 			mem::read_raw(_data, buffer, count * sizeof(wchar_t));
 			return buffer;
@@ -248,12 +251,15 @@ namespace sdk {
 		f_transform get_comp_to_world() {
 			return rpm<f_transform>((uintptr_t)this + 0x240);
 		}
+
 		void set_relative_scale(vector3 scale3d) {
 			wpm<vector3>((uintptr_t)this + 0x158, scale3d);
 		}
+
 		vector3 get_relative_scale() {
 			return rpm<vector3>((uintptr_t)this + 0x158);
 		}
+
 		f_transform get_transform() {
 			f_transform t{ };
 			t.scale3d = get_relative_scale();
@@ -305,10 +311,10 @@ namespace sdk {
 			wpm<actor*>((uintptr_t)this + 0x1E0, value);
 		}
 		float get_loot_distance() {
-			return rpm<float>((uintptr_t)this + 0x1E0 + 0x8);
+			return rpm<float>((uintptr_t)this + 0x1E8 + 0x8);
 		}
 		fname bone_name() {
-			return rpm<fname>((uintptr_t)this + 0x1E0 + 0xE0);
+			return rpm<fname>((uintptr_t)this + 0x1E8 + 0x00D8);
 		}
 	};
 
@@ -325,12 +331,25 @@ namespace sdk {
 		unsigned char ukndata[0x3];
 	};
 
+	struct f_primaryassettype
+	{
+		fname                                              Name;                                                       // 0x0000   (0x0008)  
+	};
+
+	struct f_primaryassetid
+	{
+		f_primaryassettype                                 aPrimaryAssetType;                                           // 0x0000   (0x0008)  
+		fname                                              PrimaryAssetName;                                           // 0x0008   (0x0008)  
+	};
+
 	struct f_nickname {
 		fstring original_nickname;
 		fstring streaming_nickname;
 		fdc_karma karma;
+		uint8_t pad[0x10];
 	};
 
+	//
 	class f_account_data_replication {
 	public:
 		fstring account_id;
@@ -346,7 +365,7 @@ namespace sdk {
 		bool alive;
 		bool escape;
 		bool down;
-		unsigned char uk[0x2];
+		uint8_t uk[0x2];
 	};
 
 	class f_gameplay_attribute_data {
@@ -356,26 +375,31 @@ namespace sdk {
 		float current_value;
 	};
 
-	//uabilitysystemtestattbriuteset
+	//UDCAttributeSet
 	class u_attribute_set {
 	public:
-		float get_max_health() {
-			return rpm<float>((uintptr_t)this + 0x658 + 0xC);
-		}
 		float get_health() {
-			return rpm<float>((uintptr_t)this + 0x648 + 0xC);
+			return rpm<float>((uintptr_t)this + 0x704);
 		}
+
+		float get_max_health() {
+			return rpm<float>((uintptr_t)this + 0x714);
+		}
+
 		void set_move_speed(float value) {
-			wpm<float>((uintptr_t)this + 0x750 + offsetof(f_gameplay_attribute_data, current_value), value);
+			wpm<float>((uintptr_t)this + 0x0800 + offsetof(f_gameplay_attribute_data, current_value), value);
 		}
+
 		float get_move_speed() {
-			return rpm<float>((uintptr_t)this + 0x750 + offsetof(f_gameplay_attribute_data, current_value));
+			return rpm<float>((uintptr_t)this + 0x0800 + offsetof(f_gameplay_attribute_data, current_value));
 		}
+
 		void set_action_speed(float value) {
-			wpm<float>((uintptr_t)this + 0x7C0 + offsetof(f_gameplay_attribute_data, current_value), value);
+			wpm<float>((uintptr_t)this + 0x0870 + offsetof(f_gameplay_attribute_data, current_value), value);
 		}
+
 		float get_action_speed() {
-			return rpm<float>((uintptr_t)this + 0x7C0 + offsetof(f_gameplay_attribute_data, current_value));
+			return rpm<float>((uintptr_t)this + 0x0870 + offsetof(f_gameplay_attribute_data, current_value));
 		}
 	};
 
@@ -401,14 +425,15 @@ namespace sdk {
 	public:
 		// FDesignDataItem DesignDataItem; // 0x0468   (0x0188)
 		f_design_data_item design_data_item() {
-			return rpm<f_design_data_item>((uintptr_t)this + 0x468);
+			return rpm<f_design_data_item>((uintptr_t)this + 0x0488);
 		}
 	};
 
 	class u_item : public u_object {
 	public:
+		//FDesignDataItem                                    ItemDesignData;                                             // 0x0148   (0x0188)  
 		f_design_data_item design_data_item() {
-			return rpm<f_design_data_item>((uintptr_t)this + 0x138);
+			return rpm<f_design_data_item>((uintptr_t)this + 0x0148);
 		}
 	};
 
@@ -442,9 +467,12 @@ namespace sdk {
 
 	class udc_equipment_slot : public u_object {
 	public:
+		//EDCEquipmentSlotIndex                              SlotIndex;                                                  // 0x0028   (0x0001)  
 		edc_equipment_slot_index slot_index() {
 			return rpm<edc_equipment_slot_index>((uintptr_t)this + 0x28);
 		}
+
+		//UItem*                                             Item;                                                       // 0x0030   (0x0008)  
 		u_item* item() { 
 			return rpm<u_item*>((uintptr_t)this + 0x30);
 		}
@@ -453,7 +481,8 @@ namespace sdk {
 	class u_equipment_inv_comp {
 	public:
 		// TArray<AItemActor*> EquippedItemActors; // 0x0110   (0x0010)  
-		// TArray<AItemActor*> SheathItemActors;   // 0x0120   (0x0010)  
+		// TArray<AItemActor*> SheathItemActors;   // 0x0120   (0x0010) 
+		// TMap<EDCEquipmentSlotIndex, UDCEquipmentSlot*>     EquipSlotMap;                                               // 0x03B8   (0x0050)  
 		t_array<a_item_actor*> equipped_item_actors() {
 			return rpm<t_array<a_item_actor*>>((uintptr_t)this + 0x110);
 		}
@@ -461,7 +490,7 @@ namespace sdk {
 			return rpm<t_array<a_item_actor*>>((uintptr_t)this + 0x120);
 		}
 		t_map<uint8_t, udc_equipment_slot*> equip_slot_map() {
-			return rpm<t_map<uint8_t, udc_equipment_slot*>>((uintptr_t)this + 0x378);
+			return rpm<t_map<uint8_t, udc_equipment_slot*>>((uintptr_t)this + 0x03B8);
 		}
 	};
 
@@ -506,6 +535,7 @@ namespace sdk {
 
 	class adc_character_base : public a_character {
 	public:
+		//UAbilitySystemComponent*                           AbilitySystemComponent;                                     // 0x06B0   (0x0008)  
 		ability_system_component* ability_system_cmp() {
 			return rpm<ability_system_component*>((uintptr_t)this + 0x6B0);
 		}
@@ -513,6 +543,7 @@ namespace sdk {
 
 	class ubp_dchitbox_c : public u_scene_component {
 	public:
+		//FVector                                            BoxExtent;                                                  // 0x0558   (0x0018) 
 		vector3 get_box_extent() {
 			return rpm<vector3>((uintptr_t)this + 0x558);
 		}
@@ -526,22 +557,276 @@ namespace sdk {
 
 	};
 
+	class abp_skeletonguardman : public adc_monster_base {
+	public:
+		ubp_dchitbox_c* head_hitbox() {
+			return rpm<ubp_dchitbox_c*>((uintptr_t)this + 0x1250);
+		}
+
+		std::vector<ubp_dchitbox_c*> get_all_hitboxes() {
+			constexpr uintptr_t hitbox_arr_start = 0x1218;
+			constexpr uintptr_t hitbox_arr_end = 0x1250;
+			int list_size = (hitbox_arr_end - hitbox_arr_start) / 8;
+
+			ubp_dchitbox_c** hitbox_arr = new ubp_dchitbox_c * [list_size];
+
+			read_raw((uintptr_t)this + hitbox_arr_start, hitbox_arr, (hitbox_arr_end - hitbox_arr_start));
+
+			std::vector<ubp_dchitbox_c*> hitboxes{};
+
+			for (int i = 0; i < list_size; i++) {
+				ubp_dchitbox_c* hitbox = hitbox_arr[i];
+				if (!hitbox) continue;
+				hitboxes.push_back(hitbox);
+			}
+
+			//hitboxes.push_back(head_hitbox());
+
+			return hitboxes;
+		}
+	};
+
+	class abp_skeletonarcher : public adc_monster_base {
+	public:
+		ubp_dchitbox_c* head_hitbox() {
+			return rpm<ubp_dchitbox_c*>((uintptr_t)this + 0x1250);
+		}
+
+		std::vector<ubp_dchitbox_c*> get_all_hitboxes() {
+			constexpr uintptr_t hitbox_arr_start = 0x1218;
+			constexpr uintptr_t hitbox_arr_end = 0x1250;
+			int list_size = (hitbox_arr_end - hitbox_arr_start) / 8;
+
+			ubp_dchitbox_c** hitbox_arr = new ubp_dchitbox_c * [list_size];
+
+			read_raw((uintptr_t)this + hitbox_arr_start, hitbox_arr, (hitbox_arr_end - hitbox_arr_start));
+
+			std::vector<ubp_dchitbox_c*> hitboxes{};
+
+			for (int i = 0; i < list_size; i++) {
+				ubp_dchitbox_c* hitbox = hitbox_arr[i];
+				if (!hitbox) continue;
+				hitboxes.push_back(hitbox);
+			}
+
+			//hitboxes.push_back(head_hitbox());
+
+			return hitboxes;
+		}
+	};
+
+	class abp_skeletonfootman : public adc_monster_base {
+	public:
+		ubp_dchitbox_c* head_hitbox() {
+			return rpm<ubp_dchitbox_c*>((uintptr_t)this + 0x1250);
+		}
+
+		std::vector<ubp_dchitbox_c*> get_all_hitboxes() {
+			constexpr uintptr_t hitbox_arr_start = 0x1218;
+			constexpr uintptr_t hitbox_arr_end = 0x1250;
+			int list_size = (hitbox_arr_end - hitbox_arr_start) / 8;
+
+			ubp_dchitbox_c** hitbox_arr = new ubp_dchitbox_c * [list_size];
+
+			read_raw((uintptr_t)this + hitbox_arr_start, hitbox_arr, (hitbox_arr_end - hitbox_arr_start));
+
+			std::vector<ubp_dchitbox_c*> hitboxes{};
+
+			for (int i = 0; i < list_size; i++) {
+				ubp_dchitbox_c* hitbox = hitbox_arr[i];
+				if (!hitbox) continue;
+				hitboxes.push_back(hitbox);
+			}
+
+			//hitboxes.push_back(head_hitbox());
+
+			return hitboxes;
+		}
+	};
+
+	class abp_skeletonswordman : public adc_monster_base {
+	public:
+		ubp_dchitbox_c* head_hitbox() {
+			return rpm<ubp_dchitbox_c*>((uintptr_t)this + 0x1248);
+		}
+
+		std::vector<ubp_dchitbox_c*> get_all_hitboxes() {
+			constexpr uintptr_t hitbox_arr_start = 0x1210;
+			constexpr uintptr_t hitbox_arr_end = 0x1248;
+			int list_size = (hitbox_arr_end - hitbox_arr_start) / 8;
+
+			ubp_dchitbox_c** hitbox_arr = new ubp_dchitbox_c * [list_size];
+
+			read_raw((uintptr_t)this + hitbox_arr_start, hitbox_arr, (hitbox_arr_end - hitbox_arr_start));
+
+			std::vector<ubp_dchitbox_c*> hitboxes{};
+
+			for (int i = 0; i < list_size; i++) {
+				ubp_dchitbox_c* hitbox = hitbox_arr[i];
+				if (!hitbox) continue;
+				hitboxes.push_back(hitbox);
+			}
+
+			//hitboxes.push_back(head_hitbox());
+
+			return hitboxes;
+		}
+	};
+
+	class abp_zombie : public adc_monster_base {
+	public:
+		ubp_dchitbox_c* head_hitbox() {
+			return rpm<ubp_dchitbox_c*>((uintptr_t)this + 0x1238);
+		}
+
+		std::vector<ubp_dchitbox_c*> get_all_hitboxes() {
+			constexpr uintptr_t hitbox_arr_start = 0x1218;
+			constexpr uintptr_t hitbox_arr_end = 0x1260;
+			int list_size = (hitbox_arr_end - hitbox_arr_start) / 8;
+
+			ubp_dchitbox_c** hitbox_arr = new ubp_dchitbox_c * [list_size];
+
+			read_raw((uintptr_t)this + hitbox_arr_start, hitbox_arr, (hitbox_arr_end - hitbox_arr_start));
+
+			std::vector<ubp_dchitbox_c*> hitboxes{};
+
+			for (int i = 0; i < list_size; i++) {
+				ubp_dchitbox_c* hitbox = hitbox_arr[i];
+				if (!hitbox) continue;
+				hitboxes.push_back(hitbox);
+			}
+
+			//hitboxes.push_back(head_hitbox());
+
+			return hitboxes;
+		}
+	};
+
+	class abp_spidermummy : public adc_monster_base {
+	public:
+		std::vector<ubp_dchitbox_c*> get_all_hitboxes() {
+			constexpr uintptr_t hitbox_arr_start = 0x1210;
+			constexpr uintptr_t hitbox_arr_end = 0x1218;
+			int list_size = (hitbox_arr_end - hitbox_arr_start) / 8;
+
+			ubp_dchitbox_c** hitbox_arr = new ubp_dchitbox_c * [list_size];
+
+			read_raw((uintptr_t)this + hitbox_arr_start, hitbox_arr, (hitbox_arr_end - hitbox_arr_start));
+
+			std::vector<ubp_dchitbox_c*> hitboxes{};
+
+			for (int i = 0; i < list_size; i++) {
+				ubp_dchitbox_c* hitbox = hitbox_arr[i];
+				if (!hitbox) continue;
+				hitboxes.push_back(hitbox);
+			}
+
+			return hitboxes;
+		}
+	};
+
+	class abp_deathbeetle : public adc_monster_base {
+	public:
+		std::vector<ubp_dchitbox_c*> get_all_hitboxes() {
+			constexpr uintptr_t hitbox_arr_start = 0x1218;
+			constexpr uintptr_t hitbox_arr_end = 0x1220;
+			int list_size = (hitbox_arr_end - hitbox_arr_start) / 8;
+
+			ubp_dchitbox_c** hitbox_arr = new ubp_dchitbox_c * [list_size];
+
+			read_raw((uintptr_t)this + hitbox_arr_start, hitbox_arr, (hitbox_arr_end - hitbox_arr_start));
+
+			std::vector<ubp_dchitbox_c*> hitboxes{};
+
+			for (int i = 0; i < list_size; i++) {
+				ubp_dchitbox_c* hitbox = hitbox_arr[i];
+				if (!hitbox) continue;
+				hitboxes.push_back(hitbox);
+			}
+
+			return hitboxes;
+		}
+	};
+
+	class abp_deathskull : public adc_monster_base {
+	public:
+		std::vector<ubp_dchitbox_c*> get_all_hitboxes() {
+			constexpr uintptr_t hitbox_arr_start = 0x1218;
+			constexpr uintptr_t hitbox_arr_end = 0x1230;
+			int list_size = (hitbox_arr_end - hitbox_arr_start) / 8;
+
+			ubp_dchitbox_c** hitbox_arr = new ubp_dchitbox_c * [list_size];
+
+			read_raw((uintptr_t)this + hitbox_arr_start, hitbox_arr, (hitbox_arr_end - hitbox_arr_start));
+
+			std::vector<ubp_dchitbox_c*> hitboxes{};
+
+			for (int i = 0; i < list_size; i++) {
+				ubp_dchitbox_c* hitbox = hitbox_arr[i];
+				if (!hitbox) continue;
+				hitboxes.push_back(hitbox);
+			}
+
+			return hitboxes;
+		}
+	};
+
+	class abp_skeletonspearman_c : public adc_monster_base {
+	public:
+		std::vector<ubp_dchitbox_c*> get_all_hitboxes() {
+			constexpr uintptr_t hitbox_arr_start = 0x1218;
+			constexpr uintptr_t hitbox_arr_end = 0x1260;
+			int list_size = (hitbox_arr_end - hitbox_arr_start) / 8;
+
+			ubp_dchitbox_c** hitbox_arr = new ubp_dchitbox_c * [list_size];
+
+			read_raw((uintptr_t)this + hitbox_arr_start, hitbox_arr, (hitbox_arr_end - hitbox_arr_start));
+
+			std::vector<ubp_dchitbox_c*> hitboxes{};
+
+			for (int i = 0; i < list_size; i++) {
+				ubp_dchitbox_c* hitbox = hitbox_arr[i];
+				if (!hitbox) continue;
+				hitboxes.push_back(hitbox);
+			}
+
+			//hitboxes.push_back(head_hitbox());
+
+			return hitboxes;
+		}
+	};
+
 	class a_pawn : public adc_character_base {
 	public:
 		f_account_data_replication account_replication_data() {
-			return rpm<f_account_data_replication>((uintptr_t)this + 0x738);
+			return rpm<f_account_data_replication>((uintptr_t)this + 0x738); //ADCCharacterBase FAccountDataReplication
 		}
+
+		fstring get_account_data_replication_player_character_id()
+		{
+			return rpm<fstring>((uintptr_t)this + 0x738 + 0x0048); //ADCCharacterBase FAccountDataReplication
+		}
+
+		fstring get_account_data_replication_party_id()
+		{
+			return rpm<fstring>((uintptr_t)this + 0x738 + 0x0058); //ADCCharacterBase FAccountDataReplication
+		}
+
+		//UEquipmentInventoryComponent*                      EquipmentInventory;                                         // 0x0AF0   (0x0008) 
 		u_equipment_inv_comp* equipment_inv_comp() {
-			return rpm<u_equipment_inv_comp*>((uintptr_t)this + 0xAD0);
+			return rpm<u_equipment_inv_comp*>((uintptr_t)this + 0x0AF0);
 		}
 	};
 
 	class u_interactable_target_component : public u_object {
 	public:
 		// t_array<actor*> 0x148 interactors
+		// TArray<AActor*>                                    Interacters;                                                // 0x0148   (0x0010)  
 		t_array<actor*> interactors() {
 			return rpm<t_array<actor*>>((uintptr_t)this + 0x148);
 		}
+
+		//UPrimitiveComponent*                               CurrentInteractPart;                                        // 0x0158   (0x0008)  
 		u_scene_component* current_interact_part() {
 			return rpm<u_scene_component*>((uintptr_t)this + 0x158);
 		}
@@ -550,37 +835,41 @@ namespace sdk {
 	class u_art_data_item : public u_object {
 	public:
 		// fname 0x30
+		// EItemType                                          ItemType;                                                   // 0x0038   (0x0001) 
 		fname asset_type() {
-			return rpm<fname>((uintptr_t)this + 0x30);
+			return rpm<fname>((uintptr_t)this + 0x0038);
 		}
 		u_object* item_anim_instance_class() {
 			return rpm<u_object*>((uintptr_t)this + 0x78);
 		}
 		u_object* item_static_mesh() {
-			return rpm<u_object*>((uintptr_t)this + 0x48);
+			return rpm<u_object*>((uintptr_t)this + 0x0060);
 		}
 
 	};
 
 	class abp_static_mesh_item_holder_c : public actor {
 	public:
+		// UItem*                                             ItemObject;                                                 // 0x0388   (0x0008) 
 		u_item* item_object() {
-			return rpm<u_item*>((uintptr_t)this + 0x378);
+			return rpm<u_item*>((uintptr_t)this + 0x0388);
 		}
+
 		// 0x380
+		// UArtDataItem*                                      ArtDataItem;                                                // 0x0390   (0x0008) 
 		u_art_data_item* art_data_item() {
-			return rpm<u_art_data_item*>((uintptr_t)this + 0x380);
+			return rpm<u_art_data_item*>((uintptr_t)this + 0x0390);
 		}
 	};
 
 	class abp_player_character : public a_pawn {
 	public:
 		ubp_dchitbox_c* head_hitbox() {
-			return rpm<ubp_dchitbox_c*>((uintptr_t)this + 0xAC8);
+			return rpm<ubp_dchitbox_c*>((uintptr_t)this + 0x0AE8);
 		}
 		std::vector<ubp_dchitbox_c*> get_all_hitboxes() {
-			constexpr uintptr_t hitbox_arr_start = 0xA50;
-			constexpr uintptr_t hitbox_arr_end = 0xAC8;
+			constexpr uintptr_t hitbox_arr_start = 0x0A70;
+			constexpr uintptr_t hitbox_arr_end = 0x0AE8;
 			int list_size = (hitbox_arr_end - hitbox_arr_start) / 8;
 
 			ubp_dchitbox_c** hitbox_arr = new ubp_dchitbox_c*[list_size];
@@ -599,11 +888,15 @@ namespace sdk {
 
 			return hitboxes;
 		}
+
+		// ULootComponent*                                    LootComponent;                                              // 0x0A40   (0x0008) 
 		u_loot_component* loot_component() {
-			return rpm<u_loot_component*>((uintptr_t)this + 0xA20);
+			return rpm<u_loot_component*>((uintptr_t)this + 0x0A40);
 		}
+
+		// UInteractableTargetComponent*                      InteractableTarget;                                         // 0x0A48   (0x0008)  
 		u_interactable_target_component* target_component() {
-			return rpm<u_interactable_target_component*>((uintptr_t)this + 0xA28);
+			return rpm<u_interactable_target_component*>((uintptr_t)this + 0x0A48);
 		}
 	};
 
@@ -614,12 +907,17 @@ namespace sdk {
 
 	class a_player_controller : public a_controller {
 	public:
+		// APlayerCameraManager*                              PlayerCameraManager;                                        // 0x0348   (0x0008)  
 		a_player_camera_manager* camera_manager() {
 			return rpm<a_player_camera_manager*>((uintptr_t)this + 0x348);
 		}
+
+		// APawn*                                             AcknowledgedPawn;                                           // 0x0338   (0x0008) 
 		a_pawn* pawn() {
 			return rpm<a_pawn*>((uintptr_t)this + 0x338);
 		}
+
+		// Don't use
 		void set_max_jumps(int32_t value) {
 			wpm<int32_t>((uintptr_t)this + 0x424, value);
 		}
@@ -641,9 +939,12 @@ namespace sdk {
 
 	class a_floor_portal : public actor {
 	public:
+		// ABP_FloorPortalScrollBase_C
+		// bool                                               bOpen;                                                      // 0x03F0   (0x0001) 
 		bool is_open() {
 			return rpm<bool>((uintptr_t)this + 0x3F0);
 		}
+
 		int type() {
 			return (int)rpm<uint8_t>((uintptr_t)this + 0x3C0);
 		}
@@ -666,9 +967,14 @@ namespace sdk {
 
 	class u_game_state {
 	public:
+		// AGameStateBase
+		// TArray<APlayerState*>                              PlayerArray;                                                // 0x02A8   (0x0010)  
 		t_array<a_player_state*> player_array() {
 			return rpm<t_array<a_player_state*>>((uintptr_t)this + 0x2A8);
 		}
+
+		// ADCGameStateBase
+		// TArray<FAccountDataReplication>                    AccountDataReplicationArray;                                // 0x03F0   (0x0010) 
 		t_array<f_account_data_replication> account_data_replication() {
 			return rpm<t_array<f_account_data_replication>>((uintptr_t)this + 0x3F0);
 		}

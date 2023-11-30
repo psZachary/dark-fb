@@ -2,12 +2,9 @@
 
 #include <cinttypes>
 
-// https://www.youtube.com/watch?v=GWZQiddlnVM 
-// (Easiest one to find by far, YouTube video made by me explains the process very well)
-constexpr std::uint64_t GWORLD   = 0x7BE9C50;
-// "MulticastDelegateProperty"
-// (search string in Cheat Engine & find start of FNamePool & get static pointer then subtract 0x10)
-constexpr std::uint64_t GNAMES   = 0x79DC180;
-// 48 8B 05 ? ? ? ? 48 8B 0C C8 48 8D 04 D1 EB 
-// (Find sig in IDA)
-constexpr std::uint64_t GOBJECTS = 0x7A7BB10;
+// 48 8B 3D ?? ?? ?? ?? 48 8B 5C 24 60 
+constexpr std::uint64_t GWORLD = 0x7D2A0D0;
+// 48 8D 0D ?? ?? ?? ?? 8B FA 75 0F
+constexpr std::uint64_t GNAMES = 0x7B1C600;
+// 48 8B 05 ?? ?? ?? ?? 48 8B 0C C8 4C 8D 04 D1 EB 03 45 33 C0 41 8B 40 08 0F BA E0 1E 72 1B 
+constexpr std::uint64_t GOBJECTS = 0x7BBBF90;

@@ -250,6 +250,70 @@ namespace esp {
 							draw_distance(distance, screen_location, color_m::white());
 						if (config::esp::ai::health)
 							draw_health(health, max_health, screen_location);
+
+						if (false)
+						{
+							if (util::is_a(monster, "ABP_SkeletonSpearman_C") || util::is_a(monster, "ABP_SkeletonMage_Common_C"))
+							{
+								auto skeleton = (abp_skeletonspearman_c*)monster;
+								auto hitboxes = skeleton->get_all_hitboxes();
+								for (auto hitbox : hitboxes)
+								{
+									hitbox->set_relative_scale(vector3(5, 5, 5));
+								}
+							}
+
+							else if (util::is_a(monster, "ABP_SkeletonGuardmanFromFakeDeath_Common_C") || util::is_a(monster, "ABP_SkeletonGuardman_Summoned_C") || util::is_a(monster, "ABP_SkeletonGuardman_Common_C") || util::is_a(monster, "ABP_SkeletonArcher_Common_C") || util::is_a(monster, "ABP_SkeletonArcher_Elite_C") || util::is_a(monster, "ABP_SkeletonArcher_Nightmare_C"))
+							{
+								auto skeleton = (abp_skeletonguardman*)monster;
+								auto hitbox = skeleton->head_hitbox();
+								hitbox->set_relative_scale(vector3(5, 5, 5));
+							}
+
+							else if (util::is_a(monster, "ABP_SkeletonSwordman_C") || util::is_a(monster, "ABP_SkeletonSwordman_Elite_C") || util::is_a(monster, "ABP_SkeletonSwordman_Nightmare_C") || util::is_a(monster, "ABP_SkeletonFootman_Common_C") || util::is_a(monster, "ABP_SkeletonFootman_Elite_C") || util::is_a(monster, "ABP_SkeletonFootman_Nightmare_C"))
+							{
+								auto skeleton = (abp_skeletonswordman*)monster;
+								auto hitbox = skeleton->head_hitbox();
+								hitbox->set_relative_scale(vector3(5, 5, 5));
+							}
+
+							else if (util::is_a(monster, "ABP_SpiderMummy_Common_C") || util::is_a(monster, "ABP_SpiderMummy_Elite_C") || util::is_a(monster, "ABP_SpiderMummy_Nightmare_C"))
+							{
+								auto skeleton = (abp_spidermummy*)monster;
+								auto hitboxes = skeleton->get_all_hitboxes();
+								for (auto hitbox : hitboxes)
+								{
+									hitbox->set_relative_scale(vector3(5, 5, 5));
+								}
+							}
+
+							else if (util::is_a(monster, "ABP_DeathBeetle_Common_C") || util::is_a(monster, "ABP_DeathBeetle_Elite_C") || util::is_a(monster, "ABP_DeathBeetle_Nightmare_C"))
+							{
+								auto skeleton = (abp_deathbeetle*)monster;
+								auto hitboxes = skeleton->get_all_hitboxes();
+								for (auto hitbox : hitboxes)
+								{
+									hitbox->set_relative_scale(vector3(5, 5, 5));
+								}
+							}
+
+							else if (util::is_a(monster, "ABP_DeathSkull_Common_C") || util::is_a(monster, "ABP_DeathSkull_Elite_C") || util::is_a(monster, "ABP_DeathSkull_Nightmare_C"))
+							{
+								auto skeleton = (abp_deathbeetle*)monster;
+								auto hitboxes = skeleton->get_all_hitboxes();
+								for (auto hitbox : hitboxes)
+								{
+									hitbox->set_relative_scale(vector3(5, 5, 5));
+								}
+							}
+
+							else if (util::is_a(monster, "ABP_Zombie_Common_C") || util::is_a(monster, "ABP_Zombie_Elite_C") || util::is_a(monster, "ABP_Zombie_Nightmare_C"))
+							{
+								auto skeleton = (abp_zombie*)monster;
+								auto hitbox = skeleton->head_hitbox();
+								hitbox->set_relative_scale(vector3(5, 5, 5));
+							}
+						}
 					}
 					else if (!was_found) {
 						// not found in filter list
@@ -637,40 +701,58 @@ namespace esp {
 
 				if (!player) continue;
 
+				//std::cout << "pawn" << std::endl;
 				abp_player_character* pawn = (abp_player_character*)player->pawn();
 				if (!pawn || pawn == cvar::local_pawn) continue;
 
+				//std::cout << "root_cmp" << std::endl;
 				u_scene_component* root_cmp = pawn->root_component();
 				if (!root_cmp) continue;
 
+				//std::cout << "skeletal_mesh_comp" << std::endl;
 				u_skeletal_mesh_component* skeletal_mesh_comp = pawn->skeletal_mesh();
 				if (!skeletal_mesh_comp) continue;
 
+				//std::cout << "get_relative_location" << std::endl;
 				vector3 position = root_cmp->get_relative_location();
 
+				//std::cout << "distance" << std::endl;
 				double distance = ((position - local_position) / 100).magnitude();
 
+				//std::cout << "get_health" << std::endl;
 				auto [max_health, health] = util::get_health(pawn);
 				if (health <= 0.f) continue;
 
+				//std::cout << "get_comp_to_world" << std::endl;
 				f_transform c2w = skeletal_mesh_comp->get_comp_to_world();
 				vector3 screen_location{};
 				
+				//std::cout << "draw_head_hitbox" << std::endl;
 				if (config::esp::players::head_hitboxes)
 					draw_head_hitbox(pawn, camera_cache);
+
+				//std::cout << "draw_skeleton" << std::endl;
 				if (config::esp::players::skeleton)
 					draw_skeleton(pawn, camera_cache, c2w, skeletal_mesh_comp);
+
+				//std::cout << "draw_box" << std::endl;
 				if (config::esp::players::box)
 					draw_box(camera_cache, c2w, skeletal_mesh_comp);
 	
+				//std::cout << "w2s" << std::endl;
 				if (util::w2s(position, camera_cache.pov, screen_location)) {
 
 					screen_location.x += 12.f;
 
+					//std::cout << "draw_names" << std::endl;
 					if (config::esp::players::name)
 						draw_names(pawn, vector2(screen_location));
+
+					//std::cout << "draw_distance" << std::endl;
 					if (config::esp::players::distance)
 						draw_distance(distance, vector2(screen_location));
+
+					//std::cout << "draw_health" << std::endl;
 					if (config::esp::players::health)
 						draw_health(health, max_health, vector2(screen_location));
 
@@ -678,10 +760,15 @@ namespace esp {
 						u_equipment_inv_comp* equipment_inventory = pawn->equipment_inv_comp();
 						if (!equipment_inventory) return;
 
+						//std::cout << "draw_equipped" << std::endl;
 						if (config::esp::players::equipped_items)
 							draw_equipped(equipment_inventory, vector2(screen_location));
+
+						//std::cout << "draw_wearables" << std::endl;
 						if (config::esp::players::armor_items || config::esp::players::utility_items)
 							draw_wearables(equipment_inventory, vector2(screen_location));
+
+						//std::cout << "draw_sheathed" << std::endl;
 						if (config::esp::players::sheathed_items)
 							draw_sheathed(equipment_inventory, vector2(screen_location));
 					}
@@ -912,30 +999,94 @@ namespace esp {
 
 void esp::draw()
 {
+	//std::cout << "camera_cache" << std::endl;
 	cvar::camera_cache = cvar::local_camera_manager->last_frame_cam_cache_private();
 
+	//std::cout << "player_esp" << std::endl;
 	if (config::esp::players::enabled) 
 		esp::players::player_esp(cvar::camera_cache);
+
+	//std::cout << "chest_esp" << std::endl;
 	if (config::esp::chest::enabled) 
 		esp::chests::chest_esp(cvar::camera_cache);
+
+	//std::cout << "portal_esp" << std::endl;
 	if (config::esp::portal::enabled) 
 		esp::portals::portal_esp(cvar::camera_cache);
+
+	//std::cout << "other_esp" << std::endl;
 	if (config::esp::other::actors)
 		esp::other::other_esp(cvar::camera_cache);
+
+	//std::cout << "shrine_esp" << std::endl;
 	if (config::esp::shrine::enabled)
 		esp::shrines::shrine_esp(cvar::camera_cache);	
+
+	//std::cout << "ore_esp" << std::endl;
 	if (config::esp::ore::enabled)
 		esp::ore::ore_esp(cvar::camera_cache);
+
+	//std::cout << "trap_esp" << std::endl;
 	if (config::esp::trap::enabled)
 		esp::traps::trap_esp(cvar::camera_cache);
+
+	//std::cout << "draw_fov_circle" << std::endl;
 	if (config::combat::aimbot)
 		esp::aimbot::draw_fov_circle(config::combat::fov);
+
+	//std::cout << "draw_window" << std::endl;
 	if (config::esp::players::lobby::enabled)
 		esp::players::lobby::draw_window();
+
+	//std::cout << "draw_game_status" << std::endl;
 	if (config::esp::players::game_status::enabled)
 		esp::players::game_status::draw_game_status();
+
+	//std::cout << "ai_esp" << std::endl;
 	if (config::esp::ai::enabled)
 		esp::ai::ai_esp(cvar::camera_cache);
+
+	//std::cout << "loot_esp" << std::endl;
 	if (config::esp::loot::enabled)
 		esp::loot::loot_esp(cvar::camera_cache);
+
+	if (config::menu::fullbright && cvar::game_viewport)
+	{
+		cvar::game_viewport->set_viewmode_index(0x1);
+	}
+	else
+		cvar::game_viewport->set_viewmode_index(0x3);
+
+	/*std::cout << "Size of FAccountDataReplication: " << std::hex << sizeof(f_account_data_replication) << std::dec << std::endl;
+	std::cout << "Size of f_nickname: " << std::hex << sizeof(f_nickname) << std::dec << std::endl;
+	std::cout << "Size of fstring: " << std::hex << sizeof(fstring) << std::dec << std::endl;
+	std::cout << "Size of fname: " << std::hex << sizeof(fname) << std::dec << std::endl;
+	std::cout << "Local Pawn: " << std::hex << (uintptr_t)cvar::local_pawn << std::dec << std::endl;
+	auto replicated_data = cvar::local_pawn->account_replication_data();
+	auto account_id = replicated_data.account_id;
+	auto account_id_str = account_id.read_string();
+	std::wcout << "LocalPlayer Account ID: " << account_id_str << std::endl;
+
+	auto original_nickname = replicated_data.nickname.original_nickname;
+	auto original_nickname_str = original_nickname.read_string();
+	std::wcout << "LocalPlayer original_nickname: " << original_nickname_str << std::endl;
+
+	auto player_character_id = replicated_data.player_character_id;
+	auto player_character_id_str = player_character_id.read_string();
+	std::wcout << "LocalPlayer player_character_id: " << player_character_id_str << std::endl;
+
+	auto party_id = replicated_data.party_id;
+	auto party_id_str = party_id.read_string();
+	if (party_id_str)
+		std::wcout << "LocalPlayer party_id: " << party_id_str << std::endl;
+
+	auto character_id = replicated_data.character_id;
+	auto character_id_str = character_id.read_string();
+	std::wcout << "LocalPlayer character_id: " << character_id_str << std::endl;
+
+	auto gender = replicated_data.gender;
+	std::wcout << "LocalPlayer gender: " << gender << std::endl;
+
+	auto level = replicated_data.level;
+	std::wcout << "LocalPlayer level: " << level << std::endl;*/
 }

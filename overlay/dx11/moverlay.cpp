@@ -195,31 +195,35 @@ c_overlay::c_overlay() :
 	menu_ticks(NULL)
 {
 	//window_handle = FindWindowW(L"MedalOverlayClass", L"MedalOverlay"); 
-	window_handle = FindWindowA("CEF-OSC-WIDGET", "NVIDIA GeForce Overlay"); 
+	window_handle = FindWindowA("CEF-OSC-WIDGET", "NVIDIA GeForce Overlay");
 
-	if (!window_handle)
-		return;
+	if (window_handle)
+	{
 
-	auto info = GetWindowLongA(window_handle, -20);
-	if (!info)
-		return;
+		auto info = GetWindowLongA(window_handle, -20);
+		if (!info)
+			return;
 
-	auto attrchange = SetWindowLongPtrA(window_handle, -20, (LONG_PTR)(info | 0x20));
+		auto attrchange = SetWindowLongPtrA(window_handle, -20, (LONG_PTR)(info | 0x20));
 
-	if (!attrchange)
-		return;
+		if (!attrchange)
+			return;
 
-	MARGINS margin;
-	margin.cyBottomHeight = margin.cyTopHeight = margin.cxLeftWidth = margin.cxRightWidth = -1;
+		MARGINS margin;
+		margin.cyBottomHeight = margin.cyTopHeight = margin.cxLeftWidth = margin.cxRightWidth = -1;
 
-	if (DwmExtendFrameIntoClientArea(window_handle, &margin) != S_OK)
-		return;
+		if (DwmExtendFrameIntoClientArea(window_handle, &margin) != S_OK)
+			return;
 
-	if (!SetLayeredWindowAttributes(window_handle, 0x000000, 0xFF, 0x02))
-		return;
+		if (!SetLayeredWindowAttributes(window_handle, 0x000000, 0xFF, 0x02))
+			return;
 
-	if (!SetWindowPos(window_handle, HWND_TOPMOST, 0, 0, 0, 0, 0x0002 | 0x0001))
-		return;
+		if (!SetWindowPos(window_handle, HWND_TOPMOST, 0, 0, 0, 0, 0x0002 | 0x0001))
+			return;
+
+	}
+	else
+		window_handle = FindWindowA(("0"), ("0"));
 
 	ShowWindow(window_handle, SW_SHOW);
 

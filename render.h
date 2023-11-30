@@ -11,8 +11,15 @@
 #include "menu.h"
 
 void on_overlay_render() {
-    menu::draw();
-    esp::draw();
+    try
+    {
+        menu::draw();
+        esp::draw();
+    }
+    catch (...)
+    {
+        //std::cout << "Error on overlay render callback!" << std::endl;
+    }
 }
 
 inline int render_threaded() {

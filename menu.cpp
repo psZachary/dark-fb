@@ -43,6 +43,7 @@ void menu::draw()
             ImGui::TextColored(ImVec4(1.f, 1.f, 1.f, 1.f), "Activation Distance");
             ImGui::SliderFloat("  ", &config::combat::activation_distance, 1.f, 10.f, "%.2f");
             ImGui::Checkbox("No Hit Teamates", &config::combat::no_hit_teamates);
+            ImGui::Checkbox("Full Bright", &config::menu::fullbright);
             ImGui::Checkbox("Move Speed", &config::combat::move_speed_enabled);
             if (config::combat::move_speed_enabled)
                 ImGui::SliderFloat("  ", &config::combat::move_speed, 0.f, 350.f, "%.2f");
