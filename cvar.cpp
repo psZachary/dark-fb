@@ -15,6 +15,8 @@ void cvar::cache_actors()
     std::vector<actor*> shrine_actors{};
     std::vector<actor*> trap_actors{};
     std::vector<actor*> ore_actors{};
+    std::vector<actor*> dead_body_actors{};
+    std::vector<actor*> projectile_actors{};
     std::vector<abp_static_mesh_item_holder_c*> ground_loot_actors{};
     std::vector<adc_monster_base*> monster_actors{};
 
@@ -23,15 +25,21 @@ void cvar::cache_actors()
         if (!level) continue;
 
         t_array<actor*> actors = level->actors();
-        for (actor* actor : actors.list()) {
+        for (actor*& actor : actors.list()) {
             if (!actor) continue;
 
             auto actor_name = util::actor_name(actor);
 
             if (util::is_a(actor, "BP_StaticMeshItemHolder_C")) {
-				ground_loot_actors.push_back((abp_static_mesh_item_holder_c*)actor);
-				continue;
-			}
+                ground_loot_actors.push_back((abp_static_mesh_item_holder_c*)actor);
+                continue;
+            }
+
+            if (actor_name.find("PlayerCharacterDungeon_C") != std::string::npos)
+            {
+                dead_body_actors.push_back(actor);
+                continue;
+            }
 
             if (actor_name.find("Chest") != std::string::npos ||
                 actor_name.find("Coffin") != std::string::npos ||
@@ -60,15 +68,29 @@ void cvar::cache_actors()
                 continue;
             }
 
+            //ABP_FloorSpikes_C
             if (actor_name.find("Spike") != std::string::npos ||
                 actor_name.find("HuntingTrap") != std::string::npos) {
                 trap_actors.push_back(actor);
                 continue;
             }
+
+            //
             if (actor_name.find("Ore") != std::string::npos) {
                 ore_actors.push_back(actor);
 				continue;
             }
+
+            /*if (actor_name.find("Projectile") != std::string::npos)
+            {
+                std::cout << "Found " << actor_name << std::endl;
+                continue;
+            }*/
+
+            /*if (actor_name.find("BP_ArrowProjectile_C") != std::string::npos) {
+                projectile_actors.push_back(actor);
+                continue;
+            }*/
 
             if (config::esp::other::actors)
                 all_actors.push_back(actor);
@@ -82,7 +104,9 @@ void cvar::cache_actors()
     cvar::traps = trap_actors;
     cvar::ores = ore_actors;
     cvar::monsters = monster_actors;
+    cvar::dead_bodies = dead_body_actors;
     cvar::ground_loot = ground_loot_actors;
+    //cvar::projectiles = projectile_actors;
 }
 
 void cvar::cache_cvars()

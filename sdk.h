@@ -16,15 +16,27 @@ namespace sdk {
 	constexpr const char* MODULE_NAME = "DungeonCrawler.exe";
 	constexpr const wchar_t* MODULE_NAME_WSTR = L"DungeonCrawler.exe";
 
-	inline std::map<std::string, color_m*> rarity_colors{
+	inline static std::map<std::string, color_m*> rarity_colors{
 		{ "Type.Item.Rarity.Junk", &config::colors::color_junk },
 		{ "Type.Item.Rarity.Poor", &config::colors::color_poor },
 		{ "Type.Item.Rarity.Common", &config::colors::color_common },
 		{ "Type.Item.Rarity.Uncommon", &config::colors::color_uncommon },
 		{ "Type.Item.Rarity.Epic", &config::colors::color_epic },
 		{ "Type.Item.Rarity.Rare", &config::colors::color_rare },
-		{ "Type.Item.Rarity.Legendary", &config::colors::color_legendary },
+		{ "Type.Item.Rarity.Legend", &config::colors::color_legendary },
 		{ "Type.Item.Rarity.Unique", &config::colors::color_legendary }
+	};
+
+	enum e_rarity : int32_t
+	{
+		rarity_junk,
+		rarity_poor,
+		rarity_common,
+		rarity_uncommon,
+		rarity_epic,
+		rarity_rare,
+		rarity_legendary,
+		rarity_unique
 	};
 
 	struct fname {
@@ -218,16 +230,28 @@ namespace sdk {
 		{ player_bone::l_elbow, player_bone::l_hand },
 	};
 
+	class wchar_holder
+	{
+	public:
+		wchar_t test[250];
+	};
+
 	class fstring : public t_array<wchar_t> {
 	public:
-		wchar_t* read_string() {
+		std::string read_string() {
 			if (count <= 0 || count > 500)
 			{
-				return 0;
+				return std::string();
 			}
-			auto buffer = new wchar_t[count];
-			mem::read_raw(_data, buffer, count * sizeof(wchar_t));
-			return buffer;
+			//auto buffer = new wchar_t[count];
+			//mem::read_raw(_data, buffer, count * sizeof(wchar_t));
+			auto test = rpm<wchar_holder>(_data); //rpm<uintptr_t>((uintptr_t)this + 0x00C0));
+			char ch[260];
+			char DefChar = ' ';
+			WideCharToMultiByte(CP_ACP, 0, test.test, -1, ch, 260, &DefChar, NULL);
+			std::string ss(ch);
+			//delete[] ch;
+			return ss;
 		}
 	};
 	class u_scene_component : public u_object {
@@ -265,6 +289,10 @@ namespace sdk {
 			t.scale3d = get_relative_scale();
 			t.translation = get_relative_location();
 			return t;
+		}
+
+		void set_component_velocity(vector3 new_velocity) {
+			wpm<vector3>((uintptr_t)this + 0x170, new_velocity);
 		}
 	};
 
@@ -307,7 +335,6 @@ namespace sdk {
 			return rpm<actor*>((uintptr_t)this + 0x1E0);
 		}
 		void set_loot_target_actor(actor* value) {
-			//wpm<actor*>((uintptr_t)this + 0x1E0 + 0xB8, value);
 			wpm<actor*>((uintptr_t)this + 0x1E0, value);
 		}
 		float get_loot_distance() {
@@ -379,14 +406,17 @@ namespace sdk {
 	class u_attribute_set {
 	public:
 		float get_health() {
-			return rpm<float>((uintptr_t)this + 0x704);
+			return rpm<float>((uintptr_t)this + 0x6F8 + offsetof(f_gameplay_attribute_data, current_value));
 		}
 
 		float get_max_health() {
-			return rpm<float>((uintptr_t)this + 0x714);
+			return rpm<float>((uintptr_t)this + 0x708 + offsetof(f_gameplay_attribute_data, current_value));
 		}
 
 		void set_move_speed(float value) {
+			if ((uintptr_t)this < 0x10000)
+				return;
+
 			wpm<float>((uintptr_t)this + 0x0800 + offsetof(f_gameplay_attribute_data, current_value), value);
 		}
 
@@ -395,16 +425,86 @@ namespace sdk {
 		}
 
 		void set_action_speed(float value) {
+			if ((uintptr_t)this < 0x10000)
+				return;
+
 			wpm<float>((uintptr_t)this + 0x0870 + offsetof(f_gameplay_attribute_data, current_value), value);
 		}
 
 		float get_action_speed() {
 			return rpm<float>((uintptr_t)this + 0x0870 + offsetof(f_gameplay_attribute_data, current_value));
 		}
+
+		float get_strength() {
+			return rpm<float>((uintptr_t)this + 0x0030 + offsetof(f_gameplay_attribute_data, current_value));
+		}
+
+		void set_strength(float value) {
+			if ((uintptr_t)this < 0x10000)
+				return;
+
+			 wpm<float>((uintptr_t)this + 0x0030 + offsetof(f_gameplay_attribute_data, current_value), value);
+		}
+
+		float get_vigor() {
+			return rpm<float>((uintptr_t)this + 0x0060 + offsetof(f_gameplay_attribute_data, current_value));
+		}
+
+		void set_vigor(float value) {
+			if ((uintptr_t)this < 0x10000)
+				return;
+
+			wpm<float>((uintptr_t)this + 0x0060 + offsetof(f_gameplay_attribute_data, current_value), value);
+		}
+
+		float get_agility() {
+			return rpm<float>((uintptr_t)this + 0x0090 + offsetof(f_gameplay_attribute_data, current_value));
+		}
+
+		void set_agility(float value) {
+			if ((uintptr_t)this < 0x10000)
+				return;
+
+			wpm<float>((uintptr_t)this + 0x0090 + offsetof(f_gameplay_attribute_data, current_value), value);
+		}
+
+		float get_dexterity() {
+			return rpm<float>((uintptr_t)this + 0x00C0 + offsetof(f_gameplay_attribute_data, current_value));
+		}
+
+		void set_dexterity(float value) {
+			if ((uintptr_t)this < 0x10000)
+				return;
+
+			wpm<float>((uintptr_t)this + 0x00C0 + offsetof(f_gameplay_attribute_data, current_value), value);
+		}
+
+		float get_interaction_speed() {
+			return rpm<float>((uintptr_t)this + 0x08B0 + offsetof(f_gameplay_attribute_data, current_value));
+		}
+
+		void set_interaction_speed(float value) {
+			if ((uintptr_t)this < 0x10000)
+				return;
+
+			wpm<float>((uintptr_t)this + 0x08B0 + offsetof(f_gameplay_attribute_data, current_value), value);
+		}
+
+		float get_itemequip_speed() {
+			return rpm<float>((uintptr_t)this + 0x890 + offsetof(f_gameplay_attribute_data, current_value));
+		}
+
+		void set_itemequip_speed(float value) {
+			if ((uintptr_t)this < 0x10000)
+				return;
+
+			wpm<float>((uintptr_t)this + 0x890 + offsetof(f_gameplay_attribute_data, current_value), value);
+		}
 	};
 
 	class ability_system_component {
 	public:
+		//TArray<class UAttributeSet*>                 SpawnedAttributes;                                 // 0x11F0(0x10)(ExportObject, Net, ZeroConstructor, RepNotify, ContainsInstancedReference, UObjectWrapper, NativeAccessSpecifierPrivate)
 		t_array<u_attribute_set*> get_spawned_attributes() {
 			return rpm<t_array<u_attribute_set*>>((uintptr_t)this + 0x11F0);
 		}
@@ -423,7 +523,7 @@ namespace sdk {
 
 	class a_item_actor : public actor {
 	public:
-		// FDesignDataItem DesignDataItem; // 0x0468   (0x0188)
+		// FDesignDataItem DesignDataItem; // 0x488   (0x0188)
 		f_design_data_item design_data_item() {
 			return rpm<f_design_data_item>((uintptr_t)this + 0x0488);
 		}
@@ -465,6 +565,7 @@ namespace sdk {
 		max = 23
 	};
 
+	//class UDCEquipmentSlot : public UObject
 	class udc_equipment_slot : public u_object {
 	public:
 		//EDCEquipmentSlotIndex                              SlotIndex;                                                  // 0x0028   (0x0001)  
@@ -478,6 +579,7 @@ namespace sdk {
 		}
 	};
 
+	//class UEquipmentInventoryComponent : public UActorComponent
 	class u_equipment_inv_comp {
 	public:
 		// TArray<AItemActor*> EquippedItemActors; // 0x0110   (0x0010)  
@@ -503,6 +605,15 @@ namespace sdk {
 
 	class u_skeletal_mesh : public u_object {
 	public:
+		bool isVisible()
+		{
+			float fLastSubmitTime = rpm<float>((uintptr_t)this + 0x330);
+			float fLastRenderTimeOnScreen = rpm<float>((uintptr_t)this + 0x332);
+			const float fVisionTick = 0.06f;
+			bool bVisible = fLastRenderTimeOnScreen + fVisionTick >= fLastSubmitTime;
+			return bVisible;
+		}
+
 		// 0xF8
 		u_skeleton* skeleton() {
 			return rpm<u_skeleton*>((uintptr_t)this + 0xF8);
@@ -533,6 +644,7 @@ namespace sdk {
 		}
 	};
 
+	//class ADCCharacterBase : public ACharacter
 	class adc_character_base : public a_character {
 	public:
 		//UAbilitySystemComponent*                           AbilitySystemComponent;                                     // 0x06B0   (0x0008)  
@@ -541,6 +653,7 @@ namespace sdk {
 		}
 	};
 
+	//class UBP_DCHitBox_C : public UDCHitBoxComponent
 	class ubp_dchitbox_c : public u_scene_component {
 	public:
 		//FVector                                            BoxExtent;                                                  // 0x0558   (0x0018) 
@@ -581,6 +694,8 @@ namespace sdk {
 			}
 
 			//hitboxes.push_back(head_hitbox());
+
+			delete[] hitbox_arr;
 
 			return hitboxes;
 		}
@@ -796,6 +911,7 @@ namespace sdk {
 		}
 	};
 
+	//class ADCCharacterBase
 	class a_pawn : public adc_character_base {
 	public:
 		f_account_data_replication account_replication_data() {
@@ -818,6 +934,7 @@ namespace sdk {
 		}
 	};
 
+	//class UInteractableTargetComponent : public UActorComponent
 	class u_interactable_target_component : public u_object {
 	public:
 		// t_array<actor*> 0x148 interactors
@@ -832,6 +949,7 @@ namespace sdk {
 		}
 	};
 	
+	//class UArtDataItem : public UDCDataAssetBase
 	class u_art_data_item : public u_object {
 	public:
 		// fname 0x30
@@ -846,8 +964,19 @@ namespace sdk {
 			return rpm<u_object*>((uintptr_t)this + 0x0060);
 		}
 
+		u_skeletal_mesh* item_skeletal_mesh() {
+			return rpm<u_skeletal_mesh*>((uintptr_t)this + 0x48);
+		}
+
 	};
 
+	class u_mesh_component
+	{
+	public:
+
+	};
+
+	//class AItemHolderActorBase : public ADCInteractableActorBase
 	class abp_static_mesh_item_holder_c : public actor {
 	public:
 		// UItem*                                             ItemObject;                                                 // 0x0388   (0x0008) 
@@ -860,8 +989,11 @@ namespace sdk {
 		u_art_data_item* art_data_item() {
 			return rpm<u_art_data_item*>((uintptr_t)this + 0x0390);
 		}
+
+
 	};
 
+	//class ABP_PlayerCharacter_C : public ADCPlayerCharacterBase
 	class abp_player_character : public a_pawn {
 	public:
 		ubp_dchitbox_c* head_hitbox() {
@@ -885,7 +1017,7 @@ namespace sdk {
 			}
 
 			hitboxes.push_back(head_hitbox());
-
+			delete[] hitbox_arr;
 			return hitboxes;
 		}
 
@@ -897,6 +1029,11 @@ namespace sdk {
 		// UInteractableTargetComponent*                      InteractableTarget;                                         // 0x0A48   (0x0008)  
 		u_interactable_target_component* target_component() {
 			return rpm<u_interactable_target_component*>((uintptr_t)this + 0x0A48);
+		}
+
+		vector3 get_bonescaleneck()
+		{
+			return rpm<vector3>((uintptr_t)this + 0xC00);
 		}
 	};
 
@@ -921,6 +1058,8 @@ namespace sdk {
 		void set_max_jumps(int32_t value) {
 			wpm<int32_t>((uintptr_t)this + 0x424, value);
 		}
+
+
 	};
 
 	class u_player {
@@ -937,6 +1076,13 @@ namespace sdk {
 		}
 	};
 
+	enum class ETimelineDirection : uint8_t
+	{
+		ETimelineDirection__Forward = 0,
+		ETimelineDirection__Backward = 1,
+		ETimelineDirection__ETimelineDirection_MAX = 2,
+	};
+
 	class a_floor_portal : public actor {
 	public:
 		// ABP_FloorPortalScrollBase_C
@@ -947,6 +1093,51 @@ namespace sdk {
 
 		int type() {
 			return (int)rpm<uint8_t>((uintptr_t)this + 0x3C0);
+		}
+
+		//class ABP_FloorPortalScrollDown_C : public ABP_FloorPortalScrollBase_C
+		ETimelineDirection get_playportalfxtimeline__direction()
+		{
+			return rpm<ETimelineDirection>((uintptr_t)this + 0x40C);
+		}
+
+		bool is_used()
+		{
+			return rpm<bool>((uintptr_t)this + 0x40C);
+		}
+	};
+
+	class abp_trapbase_c : public a_pawn {
+	public:
+		void break_collisiondetector()
+		{
+			wpm<uintptr_t>((uintptr_t)this + 0x4A8, NULL);
+		}
+	};
+
+	class abp_floorspikes_c : public abp_trapbase_c {
+	public:
+		ubp_dchitbox_c* get_hitbox()
+		{
+			return rpm<ubp_dchitbox_c*>((uintptr_t)this + 0x0550);
+		}
+
+		ubp_dchitbox_c* get_activebox()
+		{
+			return rpm<ubp_dchitbox_c*>((uintptr_t)this + 0x558);
+		}
+
+		void set_canactivate(bool value)
+		{
+
+			wpm<bool>((uintptr_t)this + 0x578, value);
+		}
+	};
+
+	class a_projectile_actor : public actor {
+	public:
+		u_skeletal_mesh_component* mesh() {
+			return rpm<u_skeletal_mesh_component*>((uintptr_t)this + 0x308);
 		}
 	};
 

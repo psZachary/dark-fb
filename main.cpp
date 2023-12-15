@@ -92,6 +92,7 @@ void start_console() {
     FILE* f = 0;
     freopen_s(&f, "CONOUT$", "w", stdout);
 }
+
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved) {
     if (ul_reason_for_call == DLL_PROCESS_ATTACH) {
         //start_console();

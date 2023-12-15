@@ -26,7 +26,7 @@ inline int render_threaded() {
     c_overlay overlay;
 
     cvar::overlay = &overlay;
-
+    
     wh::WH_RESULT res = wh::hide_window(overlay.get_window_handle());
     if (res != wh::success && res != wh::already_hidden) {
         fail("failed to hide window");

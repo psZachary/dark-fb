@@ -24,32 +24,56 @@ void menu::draw()
 
     if (config::menu::tab_index == 0) {
         ImGui::Text("Aimbot");
-        ImGui::BeginChild("Aimbot", ImVec2(0, 170), true, ImGuiWindowFlags_ChildWindow);
-            ImGui::Checkbox("Aimbot", &config::combat::aimbot);
-            ImGui::Checkbox("Prediction", &config::combat::prediction);
-            ImGui::Hotkey("Key", &config::combat::key);
-            ImGui::Combo("Aim Type", &config::combat::aim_type, "By World Distance (In FOV)\0By Screen Distance (In FOV)\0By World Distance");
-            ImGui::SliderFloat("Strength", &config::combat::strength, 0.f, 50.f, "%.0f");
-            ImGui::SliderFloat("FOV", &config::combat::fov, 0.f, 1000.f, "%.0f");
+        ImGui::BeginChild("Aimbot", ImVec2(0, 200), true, ImGuiWindowFlags_ChildWindow);
+        ImGui::Checkbox("Aimbot", &config::combat::aimbot);
+        ImGui::Checkbox("Prediction", &config::combat::prediction);
+        ImGui::Hotkey("Key", &config::combat::key);
+        ImGui::Combo("Aim Type", &config::combat::aim_type, "By World Distance (In FOV)\0By Screen Distance (In FOV)\0By World Distance");
+        ImGui::Combo("Bone", &config::combat::aim_bone, "Head\0Neck\0Upper Spine\0Mid Spine\0Lower Spine");
+        ImGui::SliderFloat("Strength", &config::combat::strength, 0.f, 50.f, "%.0f");
+        ImGui::SliderFloat("FOV", &config::combat::fov, 0.f, 1000.f, "%.0f");
         ImGui::EndChild();
         ImGui::Text("Exploits");
-        ImGui::BeginChild("Exploits", ImVec2(0, 300), true);
-            // Don't put this any higher or you get banned 
-            ImGui::Checkbox("Big Head Hitbox", &config::combat::big_heads);
-            ImGui::TextColored(ImVec4(1.f, 1.f, 1.f, 1.f), "Expansion Size");
-            ImGui::SliderFloat("X", &config::combat::big_head_expansion_x, 0.f, 5.f, "%.2f");
-            ImGui::SliderFloat("Y", &config::combat::big_head_expansion_y, 0.f, 5.f, "%.2f");
-            ImGui::SliderFloat("Z", &config::combat::big_head_expansion_z, 0.f, 10.f, "%.2f");
-            ImGui::TextColored(ImVec4(1.f, 1.f, 1.f, 1.f), "Activation Distance");
-            ImGui::SliderFloat("  ", &config::combat::activation_distance, 1.f, 10.f, "%.2f");
-            ImGui::Checkbox("No Hit Teamates", &config::combat::no_hit_teamates);
-            ImGui::Checkbox("Full Bright", &config::menu::fullbright);
-            ImGui::Checkbox("Move Speed", &config::combat::move_speed_enabled);
-            if (config::combat::move_speed_enabled)
-                ImGui::SliderFloat("  ", &config::combat::move_speed, 0.f, 350.f, "%.2f");
+        float y_offset = 290;
+        if (config::combat::move_speed_enabled)
+            y_offset += 25;
+        if (config::combat::action_speed_enabled)
+            y_offset += 25;
+        if (config::combat::itemequip_speed_enabled)
+            y_offset += 25;
 
-            ImGui::TextColored(ImVec4(1.f, 1.f, 0.f, 1.f), "Warning: All features here may cause crashes");
-            ImGui::TextColored(ImVec4(1.f, 1.f, 0.f, 1.f), "Warning: In some instances, 72 hour bans have been reported use these at your own risk");
+        ImGui::BeginChild("Exploits", ImVec2(0, y_offset), true);
+        ImGui::TextColored(ImVec4(1.f, 1.f, 0.f, 1.f), "Warning: All features here may cause crashes");
+        ImGui::TextColored(ImVec4(1.f, 1.f, 0.f, 1.f), "Warning: In some instances, 72 hour bans have been reported use these at your own risk");
+        // Don't put this any higher or you get banned 
+        ImGui::Checkbox("Big Head Hitbox", &config::combat::big_heads);
+        ImGui::TextColored(ImVec4(1.f, 1.f, 1.f, 1.f), "Expansion Size");
+        ImGui::SliderFloat("X", &config::combat::big_head_expansion_x, 0.f, 5.f, "%.2f");
+        ImGui::SliderFloat("Y", &config::combat::big_head_expansion_y, 0.f, 5.f, "%.2f");
+        ImGui::SliderFloat("Z", &config::combat::big_head_expansion_z, 0.f, 10.f, "%.2f");
+        ImGui::TextColored(ImVec4(1.f, 1.f, 1.f, 1.f), "Activation Distance");
+        ImGui::PushID(1);
+        ImGui::SliderFloat("  ", &config::combat::activation_distance, 1.f, 10.f, "%.2f");
+        ImGui::PopID();
+        ImGui::Checkbox("No Hit Teamates", &config::combat::no_hit_teamates);
+        //ImGui::Checkbox("Full Bright (Will Ban!)", &config::menu::fullbright);
+        /*ImGui::Checkbox("Move Speed", &config::combat::move_speed_enabled);
+        ImGui::PushID(2);
+        if (config::combat::move_speed_enabled)
+            ImGui::SliderFloat("  ", &config::combat::move_speed, 0.f, 350.f, "%.2f");
+        ImGui::PopID();*/
+
+        ImGui::Checkbox("Action Speed", &config::combat::action_speed_enabled);
+        ImGui::PushID(3);
+        if (config::combat::action_speed_enabled)
+            ImGui::SliderFloat("  ", &config::combat::action_speed, 0.f, 0.80f, "%.2f");
+        ImGui::PopID();
+
+        /*ImGui::Checkbox("Item Equip Speed", &config::combat::itemequip_speed_enabled);
+        ImGui::PushID(3);
+        if (config::combat::itemequip_speed_enabled)
+            ImGui::SliderFloat("  ", &config::combat::itemequip_speed, 0.f, 5.f, "%.2f");
+        ImGui::PopID();*/
         ImGui::EndChild();
     }
     if (config::menu::tab_index == 2) {
@@ -62,6 +86,7 @@ void menu::draw()
  
         if (ImGui::CollapsingHeader("Menu", ImGuiTreeNodeFlags_Framed)) {
             ImGui::Hotkey("Toggle Key", &config::menu::toggle_key);
+            //ImGui::Checkbox("Testing", &config::menu::testing);
         }
     }
     if (config::menu::tab_index == 1) {
@@ -93,6 +118,7 @@ void menu::draw()
             ImGui::Checkbox("Armor Items", &config::esp::players::armor_items);
             ImGui::Checkbox("Utility Items", &config::esp::players::utility_items);
             ImGui::Checkbox("Sheathed Items", &config::esp::players::sheathed_items);
+            ImGui::Checkbox("Dead Bodies", &config::esp::players::dead_bodies);
             ImGui::EndChild();
             ImGui::Text("Lobby Window");
             ImGui::BeginChild("Lobby", ImVec2(0, 200), true);
@@ -165,6 +191,8 @@ void menu::draw()
             ImGui::Checkbox("Enabled", &config::esp::trap::enabled);
             ImGui::Checkbox("Name", &config::esp::trap::name);
             ImGui::Checkbox("Distance", &config::esp::trap::distance);
+            ImGui::Checkbox("Show Hitboxes", &config::esp::trap::show_hitbox);
+            ImGui::Checkbox("Break Hitboxes", &config::esp::trap::break_traps);
             if (ImGui::CollapsingHeader("Traps")) {
                 ImGui::BeginChild("Traps", ImVec2(0, 200), true);
 
@@ -228,6 +256,7 @@ void menu::draw()
             ImGui::Checkbox("Name", &config::esp::loot::name);
             ImGui::Checkbox("Distance", &config::esp::loot::distance);
             ImGui::SliderFloat("Render Distance", &config::esp::loot::render_distance, 0.f, 100.f, "%.0f");
+            ImGui::SliderInt("Rarity Level", &config::esp::loot::rarity_level, 0, 7);
             break;
         }
         case 8: {

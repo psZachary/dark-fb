@@ -229,6 +229,26 @@ namespace util {
 		return { item_name, rarity_name };
 	}
 
+	static e_rarity get_rarity_from_name(std::string name)
+	{
+		if (name.find("Junk") != std::string::npos)
+			return e_rarity::rarity_junk;
+		else if (name.find("Poor") != std::string::npos)
+			return e_rarity::rarity_poor;
+		else if (name.find("Common") != std::string::npos)
+			return e_rarity::rarity_common;
+		else if (name.find("Uncommon") != std::string::npos)
+			return e_rarity::rarity_common;
+		else if (name.find("Epic") != std::string::npos)
+			return e_rarity::rarity_epic;
+		else if (name.find("Rare") != std::string::npos)
+			return e_rarity::rarity_rare;
+		else if (name.find("Legendary") != std::string::npos)
+			return e_rarity::rarity_legendary;
+		else if (name.find("Unique") != std::string::npos)
+			return e_rarity::rarity_unique;
+	}
+
 	static bool w2s(vector3 location, sdk::f_minimal_view_info camera_cache, vector3& screen_loc) {
 		auto pov = camera_cache;
 		vector3 rotation = pov.rotation;
@@ -292,27 +312,18 @@ namespace util {
 
 	static bool is_friendly(sdk::a_pawn* character) {
 		if (!cvar::validate_cvars()) return false;
-		
+		//return false;
+		//if (config::combat::no_hit_teamates)
 		auto data = character->account_replication_data(); // get_account_data_replication_party_id();
 		auto local_data = cvar::local_pawn->account_replication_data(); // get_account_data_replication_party_id();
 		auto local_party_id = local_data.party_id.read_string();
 		auto other_party_id = data.party_id.read_string();
-		if ((uintptr_t)local_party_id < 0x1000)
+		if (local_party_id.empty())
 		{
 			//std::cout << "Invalid Local PartyID" << std::endl;
 			return false;
 		}
-		if ((uintptr_t)other_party_id < 0x1000)
-		{
-			//std::cout << "Invalid Enemy PartyID" << std::endl;
-			return false;
-		}
-		if (!local_party_id)
-		{
-			//std::cout << "Invalid Local PartyID" << std::endl;
-			return false;
-		}
-		if (!other_party_id)
+		if (other_party_id.empty())
 		{
 			//std::cout << "Invalid Enemy PartyID" << std::endl;
 			return false;
@@ -322,13 +333,9 @@ namespace util {
 		std::wstring nicknamews(nickname);
 		std::string nickname_str(nicknamews.begin(), nicknamews.end());*/
 		
-		std::wstring local_party_idws(local_party_id);
-		std::string local_party_id_str(local_party_idws.begin(), local_party_idws.end());
-		int local_party_id_int = std::stoi(local_party_id_str);
+		int local_party_id_int = std::stoi(local_party_id);
 
-		std::wstring other_party_idws(other_party_id);
-		std::string other_party_id_str(other_party_idws.begin(), other_party_idws.end());
-		int other_party_id_int = std::stoi(other_party_id_str);
+		int other_party_id_int = std::stoi(other_party_id);
 		
 		//std::cout << "Local Party ID: " << local_party_id_str << std::endl;
 		//std::cout << nickname_str << " Party ID: " << other_party_id_str << std::endl;
@@ -476,10 +483,7 @@ namespace util {
 	}
 
 	static std::string read_fstring(sdk::fstring f_string) {
-		wchar_t* wstr = f_string.read_string();
-		if (!wstr) return "";
-
-		return std::string(_bstr_t(wstr));
+		return f_string.read_string();
 	}
 
 	static std::map<int, std::vector<sdk::f_account_data_replication>> get_parties(std::vector<sdk::f_account_data_replication> player_data) {

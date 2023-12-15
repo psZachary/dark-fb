@@ -7,14 +7,48 @@ void combat::set_attributes()
 {
     if (!cvar::validate_cvars()) return;
 
-    auto ability_system_component = cvar::local_pawn->ability_system_cmp();
-    if (!ability_system_component) return;
+    if (!cvar::local_pawn) return;
 
-    for (auto& attribute_set : ability_system_component->get_spawned_attributes().list()) {
+    if (!config::combat::action_speed_enabled && !config::combat::move_speed_enabled) return;
+
+    auto ability_system_component = cvar::local_pawn->ability_system_cmp();
+    if ((uintptr_t)ability_system_component < 0x10000) return;
+    auto attribute_list = ability_system_component->get_spawned_attributes().list();
+    static bool printed = false;
+    if (!printed)
+    {
+        for (auto& attribute_set : attribute_list) {
+            if (!attribute_set) continue;
+
+            std::cout << "Health: " << attribute_set->get_health() << std::endl;
+            std::cout << "Max Health: " << attribute_set->get_max_health() << std::endl;
+            std::cout << "Move Speed: " << attribute_set->get_move_speed() << std::endl;
+            std::cout << "Action Speed: " << attribute_set->get_action_speed() << std::endl;
+            std::cout << "Iteraction Speed: " << attribute_set->get_interaction_speed() << std::endl;
+            std::cout << "Item Equip Speed: " << attribute_set->get_itemequip_speed() << std::endl;
+
+        }
+
+        printed = true;
+    }
+
+    for (auto& attribute_set : attribute_list) {
         if (!attribute_set) continue;
 
         if (config::combat::move_speed_enabled)
+        {
             attribute_set->set_move_speed(config::combat::move_speed);
+        }
+
+        if (config::combat::action_speed_enabled)
+        {
+            attribute_set->set_action_speed(config::combat::action_speed);
+        }
+
+        /*if (config::combat::itemequip_speed_enabled)
+        {
+            attribute_set->set_itemequip_speed(config::combat::itemequip_speed);
+        }*/
     }
 }
 
@@ -23,7 +57,17 @@ void combat::do_aimbot() {
 	if (!cvar::target) return;
 	if (util::is_friendly(cvar::target)) return;
 
-	vector3 aim_location = util::get_bone_position(cvar::target, sdk::player_bone::head);
+    auto target_bone = sdk::player_bone::head;
+    if (config::combat::aim_bone == 1)
+        target_bone = sdk::player_bone::neck;
+    else if (config::combat::aim_bone == 2)
+        target_bone = sdk::player_bone::upper_spine;
+    else if (config::combat::aim_bone == 3)
+        target_bone = sdk::player_bone::mid_spine;
+    else if (config::combat::aim_bone == 4)
+        target_bone = sdk::player_bone::lower_spine;
+
+	vector3 aim_location = util::get_bone_position(cvar::target, target_bone);
 	if (aim_location == vector3::zero()) return;
 
 	if (last_aim_location == vector3::zero()) last_aim_location = aim_location;
@@ -44,6 +88,21 @@ void combat::do_aimbot() {
 	last_aim_location = aim_location;
 
 	cvar::local_player_controller->set_control_rotation(aim_angle);
+}
+
+void combat::arrow_tp() {
+    if (!cvar::validate_cvars()) return;
+    if (!cvar::target) return;
+    //if (util::is_friendly(cvar::target)) return;
+    for (auto projectile : cvar::projectiles)
+    {
+        //std::cout << "Setting projectile!" << std::endl;
+        auto root_comp = projectile->root_component();
+        auto character = (sdk::abp_player_character*)cvar::target;
+        //root_comp->set_relative_location(character->head_hitbox()->get_relative_location());
+        //std::cout << "Relative Scale: " << root_comp->get_relative_scale() << std::endl;
+        root_comp->set_relative_scale(vector3(5, 5, 5));
+    }
 }
 
 void combat::big_heads(float activation_distance, vector3 expansion)
@@ -96,6 +155,13 @@ void combat::big_heads(float activation_distance, vector3 expansion)
 					hitbox->set_relative_scale(cached_rel_scale);
             }
             continue;
+        }
+
+        if (true)
+        {
+            for (auto& hitbox : cvar::local_pawn->get_all_hitboxes()) {
+                hitbox->set_relative_scale(vector3{ 0, 0, 0 });
+            }
         }
     }
 }

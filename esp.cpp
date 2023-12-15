@@ -170,8 +170,16 @@ namespace esp {
 			for (abp_static_mesh_item_holder_c* ground_loot : cvar::ground_loot) {
 				if (!ground_loot) continue;
 
-				u_art_data_item* item = ground_loot->art_data_item();
+				u_art_data_item* artitem = ground_loot->art_data_item();
+				if (!artitem) continue;
+
+				/*u_item* item = ground_loot->item_object();
+				std::cout << std::hex << (uintptr_t)item << std::dec << std::endl;
 				if (!item) continue;
+				
+				auto [item_name, rarity_name] = util::get_item_name_rarity(item);
+				auto rarity = util::get_rarity_from_name(rarity_name);
+				if ((int)rarity > config::esp::loot::rarity_level) continue;*/
 
 				u_scene_component* root_cmp = ground_loot->root_component();
 				if (!root_cmp) continue;
@@ -184,7 +192,7 @@ namespace esp {
 				vector3 screen_location{};
 				if (util::w2s(position, camera_cache.pov, screen_location)) {
 					std::string loot_actor_name = util::actor_name(ground_loot);
-					std::string loot_sk_name = util::get_name_from_fname(item->item_static_mesh()->fname_index());
+					std::string loot_sk_name = util::get_name_from_fname(artitem->item_static_mesh()->fname_index());
 					std::string friendly_loot_name = get_friendly_name(loot_sk_name);
 					friendly_loot_name = friendly_loot_name == "None" ? "WorldLoot" : friendly_loot_name;
 					color_m loot_color = get_actor_color(loot_actor_name);
@@ -447,17 +455,33 @@ namespace esp {
 				ImColor dead = ImColor(255, 0, 0);
 				ImColor escaped = ImColor(100, 100, 255);
 				ImColor down = ImColor(255, 100, 100);
+				ImColor spectating = ImColor(235, 82, 8);
 
-				auto get_color = [alive, dead, escaped, down](f_account_data_replication player) -> ImColor {
+				auto get_color = [alive, dead, escaped, down, spectating](f_account_data_replication player) -> ImColor {
 					// use ternary if alive and not escaped or down then green else red
-					return player.alive ? player.down ? down : player.escape ? escaped : alive : dead;
+					/*return 
+						player.alive ?
+							player.down ? 
+								down : player.escape ?
+									escaped : alive : dead;*/
+
+					if (player.alive)
+					{
+						if (player.down)
+							return down;
+						return alive;
+					}
+					else if ((!player.alive || player.escape) && !player.exit)
+					{
+						return spectating;
+					}
+					else if (player.exit)
+					{
+						return escaped;
+					}
 				};
 
 				auto draw_player_row = [get_color](f_account_data_replication player) {
-					if (config::esp::players::lobby::party_id) {
-						ImGui::TableNextColumn();
-						ImGui::TextColored(get_color(player), "%s", util::read_fstring(player.party_id).c_str());
-					}
 					if (config::esp::players::lobby::level) {
 						ImGui::TableNextColumn();
 						ImGui::TextColored(get_color(player), "%i", player.level);
@@ -473,19 +497,22 @@ namespace esp {
 						ImGui::TableNextColumn();
 						ImGui::TextColored(get_color(player), "%s", player_name.c_str());
 					}
-					
+					if (config::esp::players::lobby::party_id) {
+						ImGui::TableNextColumn();
+						ImGui::TextColored(get_color(player), "%s", util::read_fstring(player.party_id).c_str());
+					}
 				};
 				
 				if (ImGui::BeginTable("PlayerTable", 4, ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_BordersInnerH| ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable))
 				{
-					if (config::esp::players::lobby::party_id)
-						ImGui::TableSetupColumn("Party ID", ImGuiTableColumnFlags_WidthFixed);
 					if (config::esp::players::lobby::level)
 						ImGui::TableSetupColumn("Level", ImGuiTableColumnFlags_WidthFixed);
 					if (config::esp::players::lobby::class_name)
 						ImGui::TableSetupColumn("Class", ImGuiTableColumnFlags_WidthFixed);
 					if (config::esp::players::lobby::name)
 						ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed);
+					if (config::esp::players::lobby::party_id)
+						ImGui::TableSetupColumn("Party ID", ImGuiTableColumnFlags_WidthFixed);
 					ImGui::TableHeadersRow();
 					for (auto& party : parties) {
 						if (party.first == 0) {
@@ -511,12 +538,14 @@ namespace esp {
 				// legend
 				ImGui::TextColored(alive, "Alive"); ImGui::SameLine();
 				ImGui::TextColored(dead, "Dead"); ImGui::SameLine();
-				ImGui::TextColored(escaped, "Escaped"); ImGui::SameLine();
+				ImGui::TextColored(spectating, "Spectating"); ImGui::SameLine();
+				ImGui::TextColored(escaped, "Left Match"); ImGui::SameLine();
 				ImGui::TextColored(down, "Down");
 
 				ImGui::End();
 			}
 		}
+		
 		void draw_skeleton(a_pawn* pawn, f_camera_cache camera_cache, f_transform c2w, u_skeletal_mesh_component* skeletal_mesh_comp) {
 			for (auto skeleton_pair : sdk::socket_skeleton) {
 				auto [first_bone, second_bone] = skeleton_pair;
@@ -538,6 +567,7 @@ namespace esp {
 				}
 			}
 		}
+		
 		void draw_box(f_camera_cache camera_cache, f_transform c2w, u_skeletal_mesh_component* skeletal_mesh_comp) {
 			
 			auto head_position = util::get_world_position(c2w, skeletal_mesh_comp->get_bone(player_bone::head));
@@ -571,7 +601,7 @@ namespace esp {
 			}
 			
 		}
-
+		
 		void draw_wearables(u_equipment_inv_comp* equipment_inventory, vector2 screen_location) {
 			auto equip_slot_map = equipment_inventory->equip_slot_map().map();
 
@@ -592,7 +622,11 @@ namespace esp {
 						item_name = get_friendly_name(item_name);
 
 						auto pcolor = sdk::rarity_colors[rarity_name];
-						if (!pcolor) continue;
+						if (!pcolor)
+						{
+							std::cout << "Failed to get rarity color for rarity: " << rarity_name << std::endl;
+							continue;
+						}
 
 						cvar::overlay->draw_text(vector2{ screen_location.x + 12.f, screen_location.y + (esp_stack * 12.f) }, ImColor(*pcolor), item_name.c_str(), true);
 						esp_stack++;
@@ -612,17 +646,19 @@ namespace esp {
 						item_name = get_friendly_name(item_name);
 
 						auto pcolor = sdk::rarity_colors[rarity_name];
-						if (!pcolor) continue;
+						if (!pcolor)
+						{
+							std::cout << "Failed to get rarity color for rarity: " << rarity_name << std::endl;
+							continue;
+						}
 
 						cvar::overlay->draw_text(vector2{ screen_location.x + 12.f, screen_location.y + (esp_stack * 12.f) }, ImColor(*pcolor), item_name.c_str(), true);
 						esp_stack++;
 					}
 				}
 			}
-
-
 		}
-
+		
 		void draw_equipped(u_equipment_inv_comp* equipment_inventory, vector2 screen_location) {
 			t_array<a_item_actor*> equipped_items = equipment_inventory->equipped_item_actors();
 			for (a_item_actor* item : equipped_items.list()) {
@@ -632,7 +668,11 @@ namespace esp {
 				item_name = get_friendly_name(item_name);
 
 				auto pcolor = sdk::rarity_colors[rarity_name];
-				if (!pcolor) continue;
+				if (!pcolor)
+				{
+					std::cout << "Failed to get rarity color for rarity: " << rarity_name << std::endl;
+					continue;
+				}
 
 				cvar::overlay->draw_text(vector2{ screen_location.x + 12.f, screen_location.y + (esp_stack * 12.f) }, ImColor(*pcolor), item_name.c_str(), true);
 				
@@ -640,7 +680,7 @@ namespace esp {
 				esp_stack++;	
 			}
 		}
-
+		
 		void draw_sheathed(u_equipment_inv_comp* equipment_inventory, vector2 screen_location) {
 			t_array<a_item_actor*> sheathed_items = equipment_inventory->sheath_item_actors();
 			for (a_item_actor* item : sheathed_items.list()) {
@@ -648,7 +688,7 @@ namespace esp {
 
 				auto [item_name, rarity_name] = util::get_item_name_rarity(item);
 				item_name = get_friendly_name(item_name);
-
+				
 				cvar::overlay->draw_text(vector2{ screen_location.x + 24.f, screen_location.y + (esp_stack * 12.f) }, ImColor(*sdk::rarity_colors[rarity_name]), item_name.c_str(), true);
 				esp_stack++;
 			}
@@ -674,6 +714,21 @@ namespace esp {
 
 		void draw_health(float health, float max_health, vector2 screen_location) {
 			cvar::overlay->draw_text(vector2{ screen_location.x + 12.f, screen_location.y + (esp_stack * 12.f) }, ImColor(util::get_hp_color(health, max_health)), std::format("{}% ({}/{})", static_cast<int>(health / max_health * 100), static_cast<int>(health), static_cast<int>(max_health)).c_str(), true);
+			esp_stack++;
+		}
+
+		void draw_dead_body(actor* actor, vector2 screen_location, color_m color) {
+			auto [player_name, class_name] = util::get_names((a_pawn*)actor);
+			std::string txt = "[";
+			txt += player_name;
+			txt += "][";
+			txt += class_name;
+			txt += "]";
+			// name is first on stack, dont add stack value to it
+			cvar::overlay->draw_text(vector2{ screen_location.x + 12.f, screen_location.y }, ImColor(config::esp::players::colors::name), "Dead Body", true);
+			esp_stack++;
+
+			cvar::overlay->draw_text(vector2{ screen_location.x + 12.f, screen_location.y + (esp_stack * 12.f) }, ImColor(config::esp::players::colors::name), txt.c_str(), true);
 			esp_stack++;
 		}
 
@@ -772,7 +827,30 @@ namespace esp {
 						if (config::esp::players::sheathed_items)
 							draw_sheathed(equipment_inventory, vector2(screen_location));
 					}
-					
+				}
+			}
+		}
+
+		void deadbody_esp(f_camera_cache camera_cache)
+		{
+			vector3 local_position = cvar::local_root_cmp->get_relative_location();
+			for (actor* dead_body : cvar::dead_bodies)
+			{
+				if (!dead_body) continue;
+
+				u_scene_component* root_cmp = dead_body->root_component();
+				if (!root_cmp) continue;
+
+				auto [max_health, health] = util::get_health((adc_character_base*)dead_body);
+				if (health > 1.f) continue;
+
+				vector3 position = root_cmp->get_relative_location();
+				double distance = ((position - local_position) / 100).magnitude();
+
+				vector3 screen_location{};
+				if (util::w2s(position, camera_cache.pov, screen_location)) {
+					draw_dead_body(dead_body, screen_location, color_m::white());
+					draw_distance(distance, screen_location);
 				}
 			}
 		}
@@ -836,6 +914,9 @@ namespace esp {
 				u_scene_component* root_cmp = portal_actor->root_component();
 				if (!root_cmp) continue;
 
+				if (portal_actor->is_used()) continue;
+				//if (portal_actor->get_playportalfxtimeline__direction() != ETimelineDirection::ETimelineDirection__Forward) continue;
+
 				vector3 position = root_cmp->get_relative_location();
 				double distance = ((position - local_position) / 100).magnitude();
 
@@ -869,6 +950,7 @@ namespace esp {
 		void draw_distance(double distance, vector2 screen_location, color_m color) {
 			cvar::overlay->draw_text(vector2{ screen_location.x, screen_location.y + 12.f }, ImColor(color), std::format("{0:.1f}m", distance).c_str(), true);
 		}
+
 		void other_esp(f_camera_cache camera_cache) {
 			vector3 local_position = cvar::local_root_cmp->get_relative_location();
 
@@ -880,6 +962,7 @@ namespace esp {
 
 				vector3 position = root_cmp->get_relative_location();
 				double distance = ((position - local_position) / 100).magnitude();
+				if (distance > 15.f) continue;
 
 				vector3 screen_location{};
 
@@ -926,6 +1009,32 @@ namespace esp {
 						draw_name(trap_name, screen_location, trap_color);
 					if (config::esp::trap::distance)
 						draw_distance(distance, screen_location, color_m::white());
+
+					auto floor_trap = (abp_floorspikes_c*)trap_actor;
+					if (config::esp::trap::break_traps && trap_actor_name.find("FloorSpikes") != std::string::npos)
+					{
+						floor_trap->get_hitbox()->set_relative_scale(vector3(0, 0, 0));
+						floor_trap->get_activebox()->set_relative_scale(vector3(0, 0, 0));
+						floor_trap->set_canactivate(false);
+						floor_trap->break_collisiondetector();
+						//auto boneneckscale = cvar::local_pawn->get_bonescaleneck();
+						//std::cout << "Bone Scale Neck: " << boneneckscale.x << " | " << boneneckscale.y << " | " << boneneckscale.z << std::endl;
+					}
+
+					if (config::esp::trap::show_hitbox)
+					{
+						ubp_dchitbox_c* hitbox = floor_trap->get_hitbox();
+						vector3 world_location = util::get_world_position(hitbox->get_comp_to_world(), hitbox->get_transform());
+						auto box_points = util::get_draw_box_points(hitbox);
+						for (auto& [point1, point2] : box_points) {
+							vector3 p1_s_loc{};
+							vector3 p2_s_loc{};
+							bool p1_on_screen = util::w2s(point1, camera_cache.pov, p1_s_loc);
+							bool p2_on_screen = util::w2s(point2, camera_cache.pov, p2_s_loc);
+							if (p1_on_screen || p2_on_screen)
+								cvar::overlay->draw_list->AddLine(p1_s_loc, p2_s_loc, ImColor(config::esp::players::colors::hitboxes));
+						}
+					}
 				}
 			}
 		}
@@ -993,18 +1102,20 @@ namespace esp {
 	}
 }
 
-
-
-
-
 void esp::draw()
 {
+	if (!cvar::local_pawn)
+		return;
+
 	//std::cout << "camera_cache" << std::endl;
 	cvar::camera_cache = cvar::local_camera_manager->last_frame_cam_cache_private();
 
 	//std::cout << "player_esp" << std::endl;
 	if (config::esp::players::enabled) 
 		esp::players::player_esp(cvar::camera_cache);
+
+	if (config::esp::players::dead_bodies)
+		esp::players::deadbody_esp(cvar::camera_cache);
 
 	//std::cout << "chest_esp" << std::endl;
 	if (config::esp::chest::enabled) 
@@ -1053,40 +1164,29 @@ void esp::draw()
 	if (config::menu::fullbright && cvar::game_viewport)
 	{
 		cvar::game_viewport->set_viewmode_index(0x1);
+		config::menu::fixed_fullbright = false;
 	}
-	else
+	else if (!config::menu::fixed_fullbright)
+	{
 		cvar::game_viewport->set_viewmode_index(0x3);
+		config::menu::fixed_fullbright = true;
+	}
 
-	/*std::cout << "Size of FAccountDataReplication: " << std::hex << sizeof(f_account_data_replication) << std::dec << std::endl;
-	std::cout << "Size of f_nickname: " << std::hex << sizeof(f_nickname) << std::dec << std::endl;
-	std::cout << "Size of fstring: " << std::hex << sizeof(fstring) << std::dec << std::endl;
-	std::cout << "Size of fname: " << std::hex << sizeof(fname) << std::dec << std::endl;
-	std::cout << "Local Pawn: " << std::hex << (uintptr_t)cvar::local_pawn << std::dec << std::endl;
-	auto replicated_data = cvar::local_pawn->account_replication_data();
-	auto account_id = replicated_data.account_id;
-	auto account_id_str = account_id.read_string();
-	std::wcout << "LocalPlayer Account ID: " << account_id_str << std::endl;
+	if (config::menu::testing)
+	{
+		vector3 local_position = cvar::local_root_cmp->get_relative_location();
 
-	auto original_nickname = replicated_data.nickname.original_nickname;
-	auto original_nickname_str = original_nickname.read_string();
-	std::wcout << "LocalPlayer original_nickname: " << original_nickname_str << std::endl;
+		for (actor* ore_actor : cvar::projectiles) {
+			if (!ore_actor) continue;
 
-	auto player_character_id = replicated_data.player_character_id;
-	auto player_character_id_str = player_character_id.read_string();
-	std::wcout << "LocalPlayer player_character_id: " << player_character_id_str << std::endl;
+			u_scene_component* root_cmp = ore_actor->root_component();
+			if (!root_cmp) continue;
 
-	auto party_id = replicated_data.party_id;
-	auto party_id_str = party_id.read_string();
-	if (party_id_str)
-		std::wcout << "LocalPlayer party_id: " << party_id_str << std::endl;
-
-	auto character_id = replicated_data.character_id;
-	auto character_id_str = character_id.read_string();
-	std::wcout << "LocalPlayer character_id: " << character_id_str << std::endl;
-
-	auto gender = replicated_data.gender;
-	std::wcout << "LocalPlayer gender: " << gender << std::endl;
-
-	auto level = replicated_data.level;
-	std::wcout << "LocalPlayer level: " << level << std::endl;*/
+			vector3 position = root_cmp->get_relative_location();
+			vector3 screen_loc;
+			if (util::w2s(position, cvar::camera_cache.pov, screen_loc))
+				cvar::overlay->draw_text(screen_loc, ImColor(1, 1, 1), "Arrow", true);
+			//root_cmp->set_relative_location(local_position + vector3(0, 0, 1));
+		}
+	}
 }

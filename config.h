@@ -7,7 +7,9 @@ namespace config {
 		inline bool is_open = true;
 		inline int toggle_key = VK_INSERT;
 		inline bool hide_overlay = true;
-		inline bool fullbright = true;
+		inline bool fullbright = false;
+		inline bool fixed_fullbright = true;
+		inline bool testing = false;
 	}
 	namespace colors {
 		inline color_m color_junk = color_rgb{ 100, 100, 100, 255 };
@@ -24,6 +26,7 @@ namespace config {
 		inline float fov = 150.f;
 		inline int key = 5;
 		inline int aim_type = 1;
+		inline int aim_bone = 0;
 		inline bool prediction = true;
 		inline bool big_heads = false;
 		inline bool no_hit_teamates = false;
@@ -36,6 +39,8 @@ namespace config {
 		inline float action_speed = 0.5f;
 		inline bool move_speed_enabled = false;
 		inline float move_speed = 350.f;
+		inline bool itemequip_speed_enabled = false;
+		inline float itemequip_speed = 0.5f;
 	}
 	namespace esp {
 		namespace ai {
@@ -62,6 +67,7 @@ namespace config {
 			inline bool name = true;
 			inline bool distance = true;
 			inline float render_distance = 10.f;
+			inline int rarity_level = 5;
 			namespace colors {
 				// bright purple (contrasting purple)
 				inline color_m ground_loot = color_rgb{ 255, 0, 255, 255 };
@@ -81,9 +87,10 @@ namespace config {
 			inline bool box = false;
 			inline bool head_hitboxes = true;
 			inline bool highlight_target = true;
+			inline bool dead_bodies = true;
 			namespace lobby {
 				inline bool enabled = false;
-				inline bool party_id;
+				inline bool party_id = true;
 				inline bool level = true;
 				inline bool class_name = true;
 				inline bool name = true;
@@ -111,6 +118,8 @@ namespace config {
 			inline bool wall_spike = true;
 			inline bool floor_spike = true;
 			inline bool hunting_trap = true;
+			inline bool show_hitbox = false;
+			inline bool break_traps = false;
 
 			namespace colors {
 				inline color_m floor_spike = color_rgb{ 173, 76, 76, 255 };

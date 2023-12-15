@@ -15,4 +15,5 @@ namespace combat {
 	void set_attributes();
 	void do_aimbot();
 	void big_heads(float activation_distance, vector3 expansion);
+	void arrow_tp();
 }

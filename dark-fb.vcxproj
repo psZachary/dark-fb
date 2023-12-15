@@ -32,6 +32,7 @@
     <ProjectGuid>{d6ef9da7-7077-469d-865d-06ea99675ea2}</ProjectGuid>
     <RootNamespace>darkfb</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>LabCore-DarkAndDarker</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
